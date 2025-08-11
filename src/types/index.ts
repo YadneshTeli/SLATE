@@ -5,6 +5,10 @@ export interface User {
   email: string;
   name: string;
   role: 'admin' | 'shooter';
+  phoneNumber?: string;
+  profilePicture?: string;
+  isActive: boolean;
+  lastLoginAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }

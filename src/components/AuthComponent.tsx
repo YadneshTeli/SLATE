@@ -61,6 +61,7 @@ export function AuthComponent({ onLogin, isLoading = false }: AuthComponentProps
         email: demoUser.email,
         name: demoUser.name,
         role: demoUser.role,
+        isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -76,6 +77,7 @@ export function AuthComponent({ onLogin, isLoading = false }: AuthComponentProps
       email: demoUser.email,
       name: demoUser.name,
       role: demoUser.role,
+      isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

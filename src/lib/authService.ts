@@ -21,13 +21,22 @@ export class AuthService {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
-      // Get user data from Firestore
+      // Get user data from database
       const userData = await userService.getByEmail(email);
       if (userData) {
-        return userData;
+        // Update last login time
+        await userService.update(userData.id, { 
+          lastLoginAt: new Date(),
+          updatedAt: new Date()
+        });
+        
+        return {
+          ...userData,
+          lastLoginAt: new Date()
+        };
       }
       
-      // If user doesn't exist in Firestore, create them
+      // If user doesn't exist in database, create them
       return await this.createUserDocument(firebaseUser, 'shooter');
     } catch (error) {
       console.error('Error signing in:', error);
@@ -40,19 +49,21 @@ export class AuthService {
     email: string, 
     password: string, 
     name: string,
-    role: 'admin' | 'shooter' = 'shooter'
+    role: 'admin' | 'shooter' = 'shooter',
+    phoneNumber?: string
   ): Promise<User | null> {
     try {
+      console.log('[AuthService] Starting email signup for:', email);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
       // Update Firebase Auth profile
       await updateProfile(firebaseUser, { displayName: name });
       
-      // Create user document in Firestore
-      return await this.createUserDocument(firebaseUser, role, name);
+      // Create user document with enhanced data
+      return await this.createUserDocument(firebaseUser, role, name, phoneNumber);
     } catch (error) {
-      console.error('Error signing up:', error);
+      console.error('[AuthService] Error signing up:', error);
       throw error;
     }
   }
@@ -102,7 +113,17 @@ export class AuthService {
       const existingUser = await userService.getByEmail(firebaseUser.email!);
       if (existingUser) {
         console.log('[AuthService] Existing user found:', existingUser.email);
-        return existingUser;
+        
+        // Update last login time
+        await userService.update(existingUser.id, { 
+          lastLoginAt: new Date(),
+          updatedAt: new Date()
+        });
+        
+        return {
+          ...existingUser,
+          lastLoginAt: new Date()
+        };
       }
       
       console.log('[AuthService] New user detected, role selection required');
@@ -201,19 +222,32 @@ export class AuthService {
     return !!auth.currentUser;
   }
 
-  // Create user document in Firestore
+  // Create user document in database
   private async createUserDocument(
     firebaseUser: FirebaseUser, 
     role: 'admin' | 'shooter',
-    name?: string
+    name?: string,
+    phoneNumber?: string
   ): Promise<User> {
+    const now = new Date();
     const userData: Omit<User, 'id'> = {
       email: firebaseUser.email!,
       name: name || firebaseUser.displayName || 'User',
       role,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      phoneNumber: phoneNumber || firebaseUser.phoneNumber || undefined,
+      profilePicture: firebaseUser.photoURL || undefined,
+      isActive: true,
+      lastLoginAt: now,
+      createdAt: now,
+      updatedAt: now,
     };
+
+    console.log('[AuthService] Creating new user document:', {
+      email: userData.email,
+      name: userData.name,
+      role: userData.role,
+      isActive: userData.isActive
+    });
 
     const userId = await userService.create(userData);
     

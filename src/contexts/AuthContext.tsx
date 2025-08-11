@@ -8,7 +8,7 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string, role?: 'admin' | 'shooter') => Promise<void>;
+  signUp: (email: string, password: string, name: string, role?: 'admin' | 'shooter', phoneNumber?: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   completeGoogleSignup: (role: 'admin' | 'shooter') => Promise<void>;
   signOut: () => Promise<void>;
@@ -68,11 +68,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string, role: 'admin' | 'shooter' = 'shooter') => {
+  const signUp = async (email: string, password: string, name: string, role: 'admin' | 'shooter' = 'shooter', phoneNumber?: string) => {
     try {
       setLoading(true);
       setError(null);
-      const user = await authService.signUpWithEmail(email, password, name, role);
+      const user = await authService.signUpWithEmail(email, password, name, role, phoneNumber);
       setUser(user);
     } catch (err) {
       console.error('Sign up error:', err);

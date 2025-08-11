@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, LogIn, UserPlus } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, LogIn, UserPlus, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +18,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [role, setRole] = useState<'admin' | 'shooter'>('shooter');
   const [showPassword, setShowPassword] = useState(false);
   const [resetMode, setResetMode] = useState(false);
@@ -43,7 +44,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       }
 
       if (isSignUp) {
-        await signUp(email, password, name, role);
+        await signUp(email, password, name, role, phoneNumber);
       } else {
         await signIn(email, password);
       }
@@ -96,6 +97,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
     setEmail('');
     setPassword('');
     setName('');
+    setPhoneNumber('');
     setRole('shooter');
     setResetMode(false);
     setResetEmail('');
@@ -273,6 +275,21 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                     className="pl-10"
                     placeholder="Your full name"
                     required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phoneNumber">Phone Number (Optional)</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="pl-10"
+                    placeholder="+1 (555) 123-4567"
                   />
                 </div>
               </div>

@@ -37,7 +37,23 @@ self.addEventListener('install', (event) => {
   console.log('[SW] Install event');
   event.waitUntil(
     Promise.all([
-      caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache)),
+      caches.open(CACHE_NAME).then(async (cache) => {
+        // Cache URLs individually to handle failures gracefully
+        const cachePromises = urlsToCache.map(async (url) => {
+          try {
+            const response = await fetch(url);
+            if (response.ok) {
+              return cache.put(url, response);
+            } else {
+              console.warn(`[SW] Failed to cache ${url}: ${response.status}`);
+            }
+          } catch (error) {
+            console.warn(`[SW] Failed to cache ${url}:`, error);
+          }
+        });
+        await Promise.allSettled(cachePromises);
+        console.log('[SW] Main cache populated');
+      }),
       caches.open(DATA_CACHE_NAME),
       caches.open(STATIC_CACHE_NAME)
     ]).then(() => {

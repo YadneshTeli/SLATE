@@ -445,7 +445,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'UPDATE_PROJECT', payload: updatedProject });
       console.log(`Assigned ${userId} to project ${project.name} with zones: ${zones.join(', ')}`);
     }
-  }, [state.projects, dispatch]);
+  }, [state.projects]);
 
   const removeUserFromProject = useCallback((projectId: string, userId: string) => {
     const project = state.projects.find(p => p.id === projectId);
@@ -470,7 +470,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
     
     console.log(`Removed ${userId} from project ${project.name}`);
-  }, [state.projects, state.user, state.currentProject, dispatch]);
+  }, [state.projects, state.user?.id, state.currentProject?.id]);
 
   const getAssignedProjects = useCallback((userId: string) => {
     return state.projects.filter(project => 

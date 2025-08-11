@@ -25,6 +25,17 @@ const missingEnvVars = requiredEnvVars.filter(varName => !import.meta.env[varNam
 if (missingEnvVars.length > 0) {
   console.error('[Firebase] Missing environment variables:', missingEnvVars);
   console.error('[Firebase] Please ensure all required environment variables are set in your .env.local file.');
+  console.error('[Firebase] Copy .env.local.template to .env.local and fill in your Firebase project details.');
+  console.error('[Firebase] Get your credentials from: Firebase Console > Project Settings > General');
+  
+  // Show specific instructions for common missing variables
+  if (missingEnvVars.includes('VITE_FIREBASE_API_KEY')) {
+    console.error('[Firebase] API Key: Found in Firebase Console > Project Settings > General > Web API Key');
+  }
+  if (missingEnvVars.includes('VITE_FIREBASE_DATABASE_URL')) {
+    console.error('[Firebase] Database URL: Found in Firebase Console > Realtime Database > Data tab');
+  }
+  
   throw new Error(`Firebase configuration incomplete. Missing: ${missingEnvVars.join(', ')}`);
 }
 

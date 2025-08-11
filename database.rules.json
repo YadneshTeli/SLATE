@@ -1,9 +1,10 @@
 {
   "rules": {
     "users": {
+      ".read": "auth != null",
+      ".indexOn": ["email"],
       "$userId": {
-        ".read": "$userId === auth.uid",
-        ".write": "$userId === auth.uid"
+        ".write": "$userId === auth.uid || !root.child('users').child($userId).exists()"
       }
     },
     "projects": {

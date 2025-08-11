@@ -13,13 +13,15 @@ export default defineConfig({
   server: {
     host: '0.0.0.0', // Allow external connections
     port: 5173,
-    strictPort: false, // Allow alternative ports if needed
+    strictPort: true, // Force port 5173 to avoid WebSocket connection mismatches
     open: false,
     hmr: {
-      port: 5174, // Use different port for HMR to avoid conflicts
+      port: 5173, // Use same port for HMR to avoid conflicts
       host: 'localhost',
       protocol: 'ws',
-      overlay: true
+      overlay: true,
+      clientPort: 5173, // Ensure client connects to correct port
+      timeout: 30000 // Increase timeout for better reliability
     },
     // Enhanced CORS configuration
     cors: {
@@ -44,6 +46,11 @@ export default defineConfig({
   base: '/',
   // Clear screen setting
   clearScreen: false,
+  // Enhanced development settings
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+    force: false
+  },
   // Enhanced build configuration
   build: {
     sourcemap: true,

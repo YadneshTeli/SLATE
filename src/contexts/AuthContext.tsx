@@ -11,6 +11,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, name: string, role?: 'admin' | 'shooter', phoneNumber?: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   completeGoogleSignup: (role: 'admin' | 'shooter') => Promise<void>;
+  handleGoogleRedirectResult: () => Promise<void>;
   signOut: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
   updateProfile: (updates: { name?: string; role?: 'admin' | 'shooter' }) => Promise<void>;
@@ -28,12 +29,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Listen to authentication state changes
+  // Listen to authentication state changes and handle redirects
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChanged((user) => {
       setUser(user);
       setLoading(false);
     });
+
+    // Check for Google redirect result on app start
+    handleGoogleRedirectResult();
 
     return unsubscribe;
   }, []);
@@ -103,10 +107,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (err) {
       console.error('Google sign in error:', err);
       if (err instanceof Error) {
-        if (err.message.includes('popup-closed-by-user')) {
+        if (err.message === 'ROLE_SELECTION_REQUIRED') {
+          // Don't set this as an error - it's expected for new users
+          console.log('Role selection required for new Google user');
+          setError('Please select your role to complete registration.');
+          // The AuthForm component should handle showing role selection UI
+        } else if (err.message.includes('popup-closed-by-user')) {
           setError('Sign in was cancelled.');
         } else if (err.message.includes('popup-blocked')) {
           setError('Popup was blocked. Please allow popups for this site.');
+        } else if (err.message.includes('Cross-Origin-Opener-Policy')) {
+          setError('Browser security settings are blocking the popup. The page will redirect for authentication.');
         } else {
           setError('Failed to sign in with Google. Please try again.');
         }
@@ -129,6 +140,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setError('Failed to complete Google signup.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleRedirectResult = async () => {
+    try {
+      const user = await authService.handleGoogleRedirectResult();
+      if (user) {
+        setUser(user);
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message === 'ROLE_SELECTION_REQUIRED') {
+        console.log('Role selection required after redirect');
+        setError('Please select your role to complete registration.');
+      } else {
+        console.error('Error handling Google redirect result:', err);
+        // Don't show error for redirect result failures - just ignore them
+      }
     }
   };
 
@@ -188,6 +216,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signUp,
     signInWithGoogle,
     completeGoogleSignup,
+    handleGoogleRedirectResult,
     signOut,
     sendPasswordReset,
     updateProfile,

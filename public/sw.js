@@ -1,38 +1,71 @@
-// Enhanced Service Worker for SLATE PWA with Offline Support
-const CACHE_NAME = 'slate-v2';
-const DATA_CACHE_NAME = 'slate-data-v1';
+// Enhanced Service Worker for SLATE PWA with Comprehensive Offline Support
+const CACHE_NAME = 'slate-v3';
+const DATA_CACHE_NAME = 'slate-data-v2';
+const STATIC_CACHE_NAME = 'slate-static-v2';
 
-// Resources to cache for offline functionality
+// Enhanced resources to cache for offline functionality
 const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/favicon.ico'
 ];
 
-// Install event - cache resources
+// Static assets patterns to cache
+const STATIC_ASSET_PATTERNS = [
+  /\.js$/,
+  /\.css$/,
+  /\.woff2?$/,
+  /\.ttf$/,
+  /\.eot$/,
+  /\.svg$/,
+  /\.png$/,
+  /\.jpg$/,
+  /\.jpeg$/,
+  /\.webp$/
+];
+
+// Background sync tags
+const SYNC_TAGS = {
+  DATA_SYNC: 'data-sync',
+  SHOT_COMPLETION: 'shot-completion',
+  USER_ACTIONS: 'user-actions'
+};
+
+// Install event - cache resources and register background sync
 self.addEventListener('install', (event) => {
   console.log('[SW] Install event');
   event.waitUntil(
     Promise.all([
       caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache)),
-      caches.open(DATA_CACHE_NAME)
-    ]).then(() => self.skipWaiting())
+      caches.open(DATA_CACHE_NAME),
+      caches.open(STATIC_CACHE_NAME)
+    ]).then(() => {
+      console.log('[SW] All caches created successfully');
+      return self.skipWaiting();
+    })
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches and claim clients
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activate event');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== DATA_CACHE_NAME) {
+          if (cacheName !== CACHE_NAME && 
+              cacheName !== DATA_CACHE_NAME && 
+              cacheName !== STATIC_CACHE_NAME) {
+            console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      console.log('[SW] Service worker activated and claiming clients');
+      return self.clients.claim();
+    })
   );
 });
 
@@ -248,15 +281,169 @@ async function queueForBackgroundSync(request) {
   });
 }
 
-// Background sync for queued requests
+// Enhanced Background sync for queued requests
 self.addEventListener('sync', (event) => {
-  if (event.tag === 'slate-background-sync') {
-    console.log('[SW] Background sync triggered');
-    event.waitUntil(syncPendingRequests());
+  console.log('[SW] Background sync triggered for tag:', event.tag);
+  
+  switch (event.tag) {
+    case SYNC_TAGS.DATA_SYNC:
+      event.waitUntil(syncPendingData());
+      break;
+    case SYNC_TAGS.SHOT_COMPLETION:
+      event.waitUntil(syncShotCompletions());
+      break;
+    case SYNC_TAGS.USER_ACTIONS:
+      event.waitUntil(syncUserActions());
+      break;
+    default:
+      // Legacy sync support
+      if (event.tag === 'slate-background-sync') {
+        event.waitUntil(syncPendingRequests());
+      }
+      break;
   }
 });
 
-// Sync pending requests when online
+// Sync all pending data changes
+async function syncPendingData() {
+  try {
+    const db = await openSyncDB();
+    const pendingItems = await getAllPendingItems(db, 'data-changes');
+    console.log('[SW] Syncing', pendingItems.length, 'data changes');
+    
+    for (const item of pendingItems) {
+      try {
+        const response = await fetch('/api/sync/data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(item.data)
+        });
+        
+        if (response.ok) {
+          await removePendingItem(db, 'data-changes', item.id);
+          console.log('[SW] Successfully synced data item:', item.id);
+        }
+      } catch (error) {
+        console.error('[SW] Failed to sync data item:', item.id, error);
+        // Increment retry count
+        await updateRetryCount(db, 'data-changes', item.id);
+      }
+    }
+  } catch (error) {
+    console.error('[SW] Data sync failed:', error);
+  }
+}
+
+// Sync shot completion status
+async function syncShotCompletions() {
+  try {
+    const db = await openSyncDB();
+    const completions = await getAllPendingItems(db, 'shot-completions');
+    console.log('[SW] Syncing', completions.length, 'shot completions');
+    
+    for (const completion of completions) {
+      try {
+        const response = await fetch('/api/shots/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(completion.data)
+        });
+        
+        if (response.ok) {
+          await removePendingItem(db, 'shot-completions', completion.id);
+          console.log('[SW] Successfully synced shot completion:', completion.id);
+        }
+      } catch (error) {
+        console.error('[SW] Failed to sync shot completion:', completion.id, error);
+        await updateRetryCount(db, 'shot-completions', completion.id);
+      }
+    }
+  } catch (error) {
+    console.error('[SW] Shot completion sync failed:', error);
+  }
+}
+
+// Helper functions for background sync
+function openSyncDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('slate-sync-queue', 2);
+    
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      
+      // Create stores for different types of sync data
+      if (!db.objectStoreNames.contains('data-changes')) {
+        const store = db.createObjectStore('data-changes', { keyPath: 'id' });
+        store.createIndex('timestamp', 'timestamp');
+        store.createIndex('retryCount', 'retryCount');
+      }
+      
+      if (!db.objectStoreNames.contains('shot-completions')) {
+        const store = db.createObjectStore('shot-completions', { keyPath: 'id' });
+        store.createIndex('timestamp', 'timestamp');
+      }
+      
+      if (!db.objectStoreNames.contains('user-actions')) {
+        const store = db.createObjectStore('user-actions', { keyPath: 'id' });
+        store.createIndex('timestamp', 'timestamp');
+      }
+      
+      // Legacy store for backward compatibility
+      if (!db.objectStoreNames.contains('pending-requests')) {
+        db.createObjectStore('pending-requests', { keyPath: 'id' });
+      }
+    };
+  });
+}
+
+function getAllPendingItems(db, storeName) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([storeName], 'readonly');
+    const store = transaction.objectStore(storeName);
+    const request = store.getAll();
+    
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+  });
+}
+
+function removePendingItem(db, storeName, itemId) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([storeName], 'readwrite');
+    const store = transaction.objectStore(storeName);
+    const request = store.delete(itemId);
+    
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
+}
+
+function updateRetryCount(db, storeName, itemId) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([storeName], 'readwrite');
+    const store = transaction.objectStore(storeName);
+    const getRequest = store.get(itemId);
+    
+    getRequest.onsuccess = () => {
+      const item = getRequest.result;
+      if (item) {
+        item.retryCount = (item.retryCount || 0) + 1;
+        item.lastRetry = Date.now();
+        
+        const updateRequest = store.put(item);
+        updateRequest.onerror = () => reject(updateRequest.error);
+        updateRequest.onsuccess = () => resolve();
+      } else {
+        resolve();
+      }
+    };
+    
+    getRequest.onerror = () => reject(getRequest.error);
+  });
+}
 async function syncPendingRequests() {
   return new Promise((resolve, reject) => {
     const dbRequest = indexedDB.open('slate-sync-queue', 1);

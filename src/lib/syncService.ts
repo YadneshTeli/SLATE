@@ -223,7 +223,7 @@ export class RealTimeSyncService {
         };
 
         await offlineDataManager.saveData('shots', offlineShot);
-        await offlineDataManager.queueForSync(offlineShot, 'create');
+        await offlineDataManager.queueForSync(offlineShot, 'create', 'shot');
 
         return tempId;
       }

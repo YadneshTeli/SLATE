@@ -8,11 +8,11 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "clean": "Remove-Item dist -Force -Recurse -ErrorAction SilentlyContinue",
     "firebase:init": "firebase init",
     "firebase:emulators": "firebase emulators:start",
     "firebase:deploy": "firebase deploy",
-    "firebase:deploy:rules": "firebase deploy --only database:rules",
-    "firebase:verify": "node scripts/verify-firebase.js"
+    "firebase:deploy:rules": "firebase deploy --only database:rules"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.2",

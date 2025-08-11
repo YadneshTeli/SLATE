@@ -166,6 +166,12 @@ interface AppContextType {
     description?: string
   ) => void;
   initializeDemoDataForUser: (userId: string) => void;
+  // Project management
+  setCurrentProject: (project: Project | null) => void;
+  restoreLastViewedProject: () => void;
+  assignUserToProject: (projectId: string, userId: string, zones: string[]) => void;
+  removeUserFromProject: (projectId: string, userId: string) => void;
+  getAssignedProjects: (userId: string) => Project[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -253,7 +259,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               title: updatedShot.title,
               checklistId: updatedShot.checklistId
             };
-            await offlineDataManager.queueForSync(shotData, 'update');
+            await offlineDataManager.queueForSync(shotData, 'update', 'shot');
           }
         }
       } catch (error) {
@@ -313,7 +319,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             title: newItem.title,
             checklistId: newItem.checklistId
           };
-          await offlineDataManager.queueForSync(shotData, 'create');
+          await offlineDataManager.queueForSync(shotData, 'create', 'shot');
         }
       } catch (error) {
         console.error('Failed to save shot item offline:', error);
@@ -336,6 +342,142 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.projects.length]);
 
+  // Last-viewed project persistence
+  const setCurrentProject = useCallback((project: Project | null) => {
+    dispatch({ type: 'SET_CURRENT_PROJECT', payload: project });
+    
+    // Save last-viewed project to localStorage for shooters
+    if (project && state.user?.role === 'shooter') {
+      try {
+        localStorage.setItem('slate-last-project-id', project.id);
+        localStorage.setItem('slate-last-project-user', state.user.id);
+      } catch (error) {
+        console.warn('Failed to save last-viewed project:', error);
+      }
+    } else if (!project) {
+      // Clear last-viewed project when no project is selected
+      localStorage.removeItem('slate-last-project-id');
+      localStorage.removeItem('slate-last-project-user');
+    }
+  }, [state.user]);
+
+  // Restore last-viewed project on login/app start
+  const restoreLastViewedProject = useCallback(() => {
+    if (!state.user || state.user.role !== 'shooter' || state.projects.length === 0) {
+      return;
+    }
+
+    try {
+      const lastProjectId = localStorage.getItem('slate-last-project-id');
+      const lastProjectUserId = localStorage.getItem('slate-last-project-user');
+
+      // Only restore if it was this user's last-viewed project
+      if (lastProjectId && lastProjectUserId === state.user.id) {
+        const lastProject = state.projects.find(p => p.id === lastProjectId);
+        
+        // Verify the user is still assigned to this project by admin
+        if (lastProject && lastProject.assignments.some(a => a.userId === state.user!.id)) {
+          dispatch({ type: 'SET_CURRENT_PROJECT', payload: lastProject });
+          console.log('Restored last-viewed project:', lastProject.name);
+          return;
+        } else if (lastProject) {
+          // Clear invalid last-viewed project (user no longer assigned)
+          localStorage.removeItem('slate-last-project-id');
+          localStorage.removeItem('slate-last-project-user');
+          console.log('Cleared last-viewed project - user no longer assigned');
+        }
+      }
+
+      // Do NOT auto-select any project - wait for admin assignment
+      // Shooter will see "no project assigned" message until admin assigns them
+      console.log('No valid last-viewed project - waiting for admin assignment');
+    } catch (error) {
+      console.warn('Failed to restore last-viewed project:', error);
+      // Do NOT auto-assign on error - let admin handle assignments
+    }
+  }, [state.user, state.projects, dispatch]);
+
+  // Auto-restore project when user logs in or projects load
+  useEffect(() => {
+    if (state.user && state.projects.length > 0 && !state.currentProject) {
+      restoreLastViewedProject();
+    }
+  }, [state.user, state.projects.length, state.currentProject, restoreLastViewedProject]);
+
+  // Admin functions for project assignments
+  const assignUserToProject = useCallback((projectId: string, userId: string, zones: string[]) => {
+    const project = state.projects.find(p => p.id === projectId);
+    if (!project) {
+      console.error('Project not found:', projectId);
+      return;
+    }
+
+    // Check if user is already assigned
+    const existingAssignment = project.assignments.find(a => a.userId === userId);
+    
+    if (existingAssignment) {
+      // Update existing assignment
+      const updatedProject = {
+        ...project,
+        assignments: project.assignments.map(a => 
+          a.userId === userId 
+            ? { ...a, zones, assignedAt: new Date() }
+            : a
+        ),
+        updatedAt: new Date()
+      };
+      dispatch({ type: 'UPDATE_PROJECT', payload: updatedProject });
+      console.log(`Updated assignment for ${userId} in project ${project.name}`);
+    } else {
+      // Add new assignment
+      const updatedProject = {
+        ...project,
+        assignments: [
+          ...project.assignments,
+          {
+            userId,
+            zones,
+            assignedAt: new Date()
+          }
+        ],
+        updatedAt: new Date()
+      };
+      dispatch({ type: 'UPDATE_PROJECT', payload: updatedProject });
+      console.log(`Assigned ${userId} to project ${project.name} with zones: ${zones.join(', ')}`);
+    }
+  }, [state.projects, dispatch]);
+
+  const removeUserFromProject = useCallback((projectId: string, userId: string) => {
+    const project = state.projects.find(p => p.id === projectId);
+    if (!project) {
+      console.error('Project not found:', projectId);
+      return;
+    }
+
+    const updatedProject = {
+      ...project,
+      assignments: project.assignments.filter(a => a.userId !== userId),
+      updatedAt: new Date()
+    };
+    dispatch({ type: 'UPDATE_PROJECT', payload: updatedProject });
+    
+    // If the current user is being removed from their current project, clear it
+    if (state.user?.id === userId && state.currentProject?.id === projectId) {
+      dispatch({ type: 'SET_CURRENT_PROJECT', payload: null });
+      // Clear last-viewed project as well
+      localStorage.removeItem('slate-last-project-id');
+      localStorage.removeItem('slate-last-project-user');
+    }
+    
+    console.log(`Removed ${userId} from project ${project.name}`);
+  }, [state.projects, state.user, state.currentProject, dispatch]);
+
+  const getAssignedProjects = useCallback((userId: string) => {
+    return state.projects.filter(project => 
+      project.assignments.some(assignment => assignment.userId === userId)
+    );
+  }, [state.projects]);
+
   const contextValue: AppContextType = {
     state,
     dispatch,
@@ -344,6 +486,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     toggleShotCompletion,
     addUserShotItem,
     initializeDemoDataForUser,
+    setCurrentProject,
+    restoreLastViewedProject,
+    assignUserToProject,
+    removeUserFromProject,
+    getAssignedProjects,
   };
 
   return (

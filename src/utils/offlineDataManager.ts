@@ -1,4 +1,4 @@
-// Offline Data Persistence for SLATE PWA
+// Enhanced Offline Data Persistence for SLATE PWA with Background Sync
 
 // Type definitions for data structures
 interface Project {
@@ -7,6 +7,7 @@ interface Project {
   title: string;
   description: string;
   createdAt: string;
+  updatedAt?: string;
   [key: string]: unknown;
 }
 
@@ -15,6 +16,7 @@ interface Checklist {
   projectId: string;
   title: string;
   items: ChecklistItem[];
+  updatedAt?: string;
   [key: string]: unknown;
 }
 
@@ -23,6 +25,8 @@ interface ChecklistItem {
   title: string;
   completed: boolean;
   mustHave: boolean;
+  completedAt?: string;
+  updatedAt?: string;
   [key: string]: unknown;
 }
 
@@ -33,6 +37,9 @@ interface Shot {
   priority: string;
   description: string;
   addedBy: string;
+  completed?: boolean;
+  completedAt?: string;
+  updatedAt?: string;
   [key: string]: unknown;
 }
 
@@ -40,15 +47,19 @@ interface User {
   id: string;
   name: string;
   role: string;
+  zone?: string;
+  lastSeen?: string;
   [key: string]: unknown;
 }
 
 interface SyncItem {
   id: string;
   type: 'create' | 'update' | 'delete';
+  entity: 'project' | 'checklist' | 'shot' | 'user';
   data: Project | Checklist | Shot | User;
   timestamp: string;
   retryCount: number;
+  userId?: string;
 }
 
 interface ExportData {
@@ -178,10 +189,15 @@ export class OfflineDataManager {
   }
 
   // Queue data for sync when online
-  async queueForSync(data: Project | Checklist | Shot | User, type: 'create' | 'update' | 'delete'): Promise<void> {
+  async queueForSync(
+    data: Project | Checklist | Shot | User, 
+    type: 'create' | 'update' | 'delete',
+    entity: 'project' | 'checklist' | 'shot' | 'user'
+  ): Promise<void> {
     const syncItem: SyncItem = {
       id: Date.now().toString(),
       type,
+      entity,
       data,
       timestamp: new Date().toISOString(),
       retryCount: 0
@@ -319,6 +335,131 @@ export class OfflineDataManager {
       for (const user of data.users) {
         await this.saveData('users', user);
       }
+    }
+  }
+
+  // Register background sync for data changes
+  async registerBackgroundSync(tag: string = 'data-sync'): Promise<void> {
+    if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        if (registration.sync) {
+          await registration.sync.register(tag);
+          console.log('[OfflineManager] Background sync registered:', tag);
+        }
+      } catch (error) {
+        console.error('[OfflineManager] Failed to register background sync:', error);
+      }
+    } else {
+      console.warn('[OfflineManager] Background sync not supported');
+    }
+  }
+
+  // Queue shot completion for background sync
+  async queueShotCompletion(shotId: string, userId: string, completed: boolean): Promise<void> {
+    if (!this.db) await this.initialize();
+    
+    const completionData = {
+      id: `${shotId}_${Date.now()}`,
+      shotId,
+      userId,
+      completed,
+      timestamp: new Date().toISOString(),
+      retryCount: 0
+    };
+
+    const transaction = this.db!.transaction(['shot-completions'], 'readwrite');
+    const store = transaction.objectStore('shot-completions');
+    await store.add(completionData);
+    
+    // Register background sync
+    await this.registerBackgroundSync('shot-completion');
+  }
+
+  // Queue user action for background sync
+  async queueUserAction(action: string, data: unknown, userId: string): Promise<void> {
+    if (!this.db) await this.initialize();
+    
+    const actionData = {
+      id: `${action}_${Date.now()}`,
+      action,
+      data,
+      userId,
+      timestamp: new Date().toISOString(),
+      retryCount: 0
+    };
+
+    const transaction = this.db!.transaction(['user-actions'], 'readwrite');
+    const store = transaction.objectStore('user-actions');
+    await store.add(actionData);
+    
+    // Register background sync
+    await this.registerBackgroundSync('user-actions');
+  }
+
+  // Get sync statistics
+  async getSyncStats(): Promise<{
+    pendingDataChanges: number;
+    pendingShotCompletions: number;
+    pendingUserActions: number;
+    lastSyncAttempt?: Date;
+  }> {
+    if (!this.db) await this.initialize();
+    
+    try {
+      const [dataChanges, shotCompletions, userActions] = await Promise.all([
+        this.getAllFromStore('sync-queue'),
+        this.getAllFromStore('shot-completions'),
+        this.getAllFromStore('user-actions')
+      ]);
+
+      return {
+        pendingDataChanges: Array.isArray(dataChanges) ? dataChanges.length : 0,
+        pendingShotCompletions: Array.isArray(shotCompletions) ? shotCompletions.length : 0,
+        pendingUserActions: Array.isArray(userActions) ? userActions.length : 0,
+        lastSyncAttempt: this.getLastSyncAttempt()
+      };
+    } catch (error) {
+      console.error('[OfflineManager] Failed to get sync stats:', error);
+      return {
+        pendingDataChanges: 0,
+        pendingShotCompletions: 0,
+        pendingUserActions: 0
+      };
+    }
+  }
+
+  // Helper method to get all items from a store
+  private async getAllFromStore(storeName: string): Promise<unknown[]> {
+    if (!this.db) return [];
+    
+    return new Promise((resolve) => {
+      const transaction = this.db!.transaction([storeName], 'readonly');
+      const store = transaction.objectStore(storeName);
+      const request = store.getAll();
+      
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => {
+        console.warn(`[OfflineManager] Store ${storeName} not found, returning empty array`);
+        resolve([]);
+      };
+    });
+  }
+
+  private getLastSyncAttempt(): Date | undefined {
+    const lastSync = localStorage.getItem('slate-last-sync');
+    return lastSync ? new Date(lastSync) : undefined;
+  }
+
+  // Clear all sync queues (for testing/debugging)
+  async clearAllSyncQueues(): Promise<void> {
+    if (!this.db) await this.initialize();
+    
+    const storeNames = ['sync-queue', 'shot-completions', 'user-actions'];
+    for (const storeName of storeNames) {
+      const transaction = this.db!.transaction([storeName], 'readwrite');
+      const store = transaction.objectStore(storeName);
+      await store.clear();
     }
   }
 }

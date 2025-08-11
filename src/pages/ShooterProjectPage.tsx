@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '@/hooks/useApp';
 import { PersistentHeader } from '@/components/PersistentHeader';
 import { AddShotForm } from '@/components/AddShotForm';
@@ -6,10 +6,11 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PageTransition, FadeIn, StaggeredList } from '@/components/animations/PageTransitions';
-import { Plus, ChevronDown, ChevronUp, AlertCircle, Camera, Video, User } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, AlertCircle, Camera, Video, User, FolderOpen } from 'lucide-react';
+import type { Project } from '@/types';
 
 export function ShooterProjectPage() {
-  const { state, dispatch } = useApp();
+  const { state, dispatch, setCurrentProject, getAssignedProjects } = useApp();
   const [showAddForm, setShowAddForm] = useState<string | false>(false);
   const [expandedChecklists, setExpandedChecklists] = useState<Set<string>>(new Set());
   const [showCompleted, setShowCompleted] = useState(false);
@@ -29,12 +30,30 @@ export function ShooterProjectPage() {
     }
   };
 
-  // Get current project - for shooters, find the project they're assigned to
-  const currentProject = state.user 
-    ? state.projects.find(project => 
-        project.assignments.some(assignment => assignment.userId === state.user!.id)
-      ) || state.projects[0]
-    : null;
+  // Get current project from context - this will be set by AppContext based on admin assignments
+  const currentProject = state.currentProject;
+  
+  // Get all projects assigned to this user
+  const assignedProjects = state.user ? getAssignedProjects(state.user.id) : [];
+
+  const handleProjectSelect = (project: Project) => {
+    setCurrentProject(project);
+  };
+
+  // Save current project as last-viewed when it changes (only if user is assigned by admin)
+  useEffect(() => {
+    if (currentProject && state.user?.role === 'shooter') {
+      // Verify user is actually assigned to this project by admin
+      const isAssigned = currentProject.assignments.some(a => a.userId === state.user!.id);
+      if (isAssigned) {
+        console.log('Accessing assigned project - saving as last-viewed:', currentProject.name);
+        // The setCurrentProject function in AppContext already handles localStorage persistence
+      } else {
+        console.warn('User not assigned to current project - clearing selection');
+        setCurrentProject(null);
+      }
+    }
+  }, [currentProject, state.user, setCurrentProject]);
 
   // Get checklists for current project
   const projectChecklists = state.checklists.filter(checklist => 
@@ -72,16 +91,26 @@ export function ShooterProjectPage() {
 
       {/* Main Content */}
       <main className="px-4 py-6 pb-24">
-        {/* User Info & Logout */}
+        {/* User Info & Project Selector */}
         <FadeIn>
           <div className="flex justify-between items-center mb-6">
-            <div>
+            <div className="flex-1">
               <h2 className="text-lg font-semibold text-slate-900">
                 Welcome, {state.user?.name}
               </h2>
-              <p className="text-sm text-slate-600">
-                {completedShots.length} / {allProjectShots.length} Completed
-              </p>
+              <div className="flex items-center gap-4 mt-1">
+                <p className="text-sm text-slate-600">
+                  {completedShots.length} / {allProjectShots.length} Completed
+                </p>
+                {assignedProjects.length > 1 && (
+                  <button
+                    onClick={() => setCurrentProject(null)}
+                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Switch Project ({assignedProjects.length} assigned)
+                  </button>
+                )}
+              </div>
             </div>
             <button
               onClick={handleLogout}
@@ -111,8 +140,88 @@ export function ShooterProjectPage() {
         {!currentProject ? (
           <FadeIn delay={0.2}>
             <div className="text-center py-12">
-              <h3 className="text-lg font-medium text-slate-900 mb-2">No Project Assigned</h3>
-              <p className="text-slate-600">Please contact your admin to assign you to a project</p>
+              <div className="max-w-md mx-auto">
+                {assignedProjects.length > 0 ? (
+                  // User has assigned projects but none selected
+                  <div>
+                    <div className="mb-6">
+                      <div className="w-24 h-24 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                        <FolderOpen className="h-12 w-12 text-blue-500" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">Select a Project</h3>
+                      <p className="text-gray-600 mb-4">
+                        You have been assigned to {assignedProjects.length} project{assignedProjects.length !== 1 ? 's' : ''}. 
+                        Choose one to get started:
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {assignedProjects.map(project => {
+                        const myAssignment = project.assignments.find(a => a.userId === state.user?.id);
+                        return (
+                          <button
+                            key={project.id}
+                            onClick={() => handleProjectSelect(project)}
+                            className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="font-semibold text-gray-900">{project.name}</h4>
+                                <p className="text-sm text-gray-600 mt-1">{project.description}</p>
+                                {myAssignment && myAssignment.zones && myAssignment.zones.length > 0 && (
+                                  <div className="mt-2">
+                                    <span className="text-xs text-blue-600 font-medium">Your zones: </span>
+                                    {myAssignment.zones.map(zone => (
+                                      <Badge key={zone} variant="outline" className="ml-1 text-xs">
+                                        {zone}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="text-2xl">→</div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  // User has no assigned projects
+                  <div>
+                    <div className="mb-6">
+                      <div className="w-24 h-24 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <Camera className="h-12 w-12 text-gray-400" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">No Project Assigned</h3>
+                      <p className="text-gray-600 mb-4">
+                        You haven't been assigned to any projects yet. Please contact your admin to get assigned to a project.
+                      </p>
+                    </div>
+                    
+                    {/* Show available projects info for transparency */}
+                    {state.projects.length > 0 && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p className="text-sm text-blue-800">
+                          <strong>{state.projects.length}</strong> project{state.projects.length !== 1 ? 's' : ''} available. 
+                          Your admin can assign you to:
+                        </p>
+                        <ul className="mt-2 text-sm text-blue-700 space-y-1">
+                          {state.projects.slice(0, 3).map(project => (
+                            <li key={project.id} className="flex items-center">
+                              <div className="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
+                              {project.name}
+                            </li>
+                          ))}
+                          {state.projects.length > 3 && (
+                            <li className="text-blue-600">...and {state.projects.length - 3} more</li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </FadeIn>
         ) : (

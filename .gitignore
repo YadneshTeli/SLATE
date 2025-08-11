@@ -7,10 +7,16 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
 dist
 dist-ssr
 *.local
+
+# Environment files
+.env.local
+.env.production
+.env.development
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +28,27 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# OS generated files
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Firebase
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+*~
+test-*
+*-backup*
+*-old*
+*-new*

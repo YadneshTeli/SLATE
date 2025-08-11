@@ -7,12 +7,16 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "preview": "vite preview",
-    "clean": "Remove-Item dist -Force -Recurse -ErrorAction SilentlyContinue",
+    "clean": "powershell Remove-Item dist -Force -Recurse -ErrorAction SilentlyContinue",
+    "clean:node_modules": "powershell Remove-Item node_modules -Force -Recurse -ErrorAction SilentlyContinue && npm install",
+    "type-check": "tsc --noEmit",
     "firebase:init": "firebase init",
     "firebase:emulators": "firebase emulators:start",
     "firebase:deploy": "firebase deploy",
-    "firebase:deploy:rules": "firebase deploy --only database:rules"
+    "firebase:deploy:rules": "firebase deploy --only database:rules",
+    "setup": "npm install && npm run type-check"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.2",

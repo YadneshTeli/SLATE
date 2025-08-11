@@ -11,7 +11,7 @@ import {
 } from 'firebase/auth';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { auth } from './firebase';
-import { userService } from './firebaseService';
+import { userService } from './realtimeService';
 import type { User } from '@/types';
 
 export class AuthService {

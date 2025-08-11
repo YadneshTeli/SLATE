@@ -1,12 +1,11 @@
 import { useEffect, useCallback, useRef } from 'react';
-import type { Unsubscribe } from 'firebase/firestore';
 import { 
   projectService, 
   checklistService, 
   shotItemService, 
   connectionService,
   batchService 
-} from './firebaseService';
+} from './realtimeService';
 import { offlineDataManager } from '@/utils/offlineDataManager';
 import type { User, Project, Checklist, ShotItem } from '@/types';
 
@@ -40,7 +39,7 @@ export interface SyncStatus {
 }
 
 export class RealTimeSyncService {
-  private unsubscribes: Unsubscribe[] = [];
+  private unsubscribes: (() => void)[] = [];
   private syncStatus: SyncStatus = {
     isConnected: navigator.onLine,
     lastSync: null,
@@ -134,7 +133,7 @@ export class RealTimeSyncService {
 
       // Group items by operation for batch processing
       const batchItems = pendingItems.map(item => ({
-        collection: this.getCollectionName(item.id), // Using id to determine type for now
+        path: this.getPathName(item.id), // Using id to determine type for now
         id: item.type === 'create' ? undefined : item.data.id,
         data: this.prepareDataForSync(item.data),
         operation: item.type
@@ -159,7 +158,7 @@ export class RealTimeSyncService {
     }
   }
 
-  private getCollectionName(itemId: string): string {
+  private getPathName(itemId: string): string {
     // Simple heuristic based on ID pattern - in a real app, you'd store the type
     if (itemId.includes('shot') || itemId.includes('user-')) {
       return 'shotItems';

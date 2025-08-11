@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { UserAvatar, UserProfile } from '@/components/UserProfile';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   MapPin, 
   Calendar, 
@@ -9,15 +12,15 @@ import {
   WifiOff, 
   Download, 
   Bell,
-  Settings
+  Settings,
+  X
 } from 'lucide-react';
 import { formatDate } from '@/utils';
 import { usePWA } from '@/hooks/usePWA';
-import type { Project, User } from '@/types';
+import type { Project } from '@/types';
 
 interface PersistentHeaderProps {
   project: Project | null;
-  user: User | null;
   isOffline?: boolean;
   pendingSyncCount?: number;
   onNotifications?: () => void;
@@ -26,12 +29,13 @@ interface PersistentHeaderProps {
 
 export function PersistentHeader({ 
   project, 
-  user, 
   isOffline = false, 
   pendingSyncCount = 0,
   onNotifications,
   onSettings 
 }: PersistentHeaderProps) {
+  const [showProfile, setShowProfile] = useState(false);
+  const { user } = useAuth();
   const { isInstallable, installApp } = usePWA();
   
   if (!project || !user) return null;
@@ -59,6 +63,18 @@ export function PersistentHeader({
           
           {/* Action Buttons */}
           <div className="flex items-center gap-1">
+            {/* User Profile */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowProfile(!showProfile)}
+              className="h-8 px-2 gap-2"
+              title="User Profile"
+            >
+              <UserAvatar user={user} size="sm" />
+              <span className="hidden sm:inline text-xs font-medium">{user.name}</span>
+            </Button>
+            
             {/* Install App Button */}
             {isInstallable && (
               <Button
@@ -149,6 +165,28 @@ export function PersistentHeader({
         {isOffline && (
           <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
             <strong>Offline Mode:</strong> Changes will sync automatically when connection is restored.
+          </div>
+        )}
+        
+        {/* User Profile Dropdown */}
+        {showProfile && (
+          <div className="mt-3 relative">
+            <div className="absolute top-0 right-0 z-10 w-80 max-w-full">
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowProfile(false)}
+                  className="absolute -top-2 -right-2 h-6 w-6 p-0 bg-white border border-gray-200 rounded-full hover:bg-gray-50"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+                <UserProfile 
+                  showHeader={false}
+                  className="bg-white border shadow-lg"
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>

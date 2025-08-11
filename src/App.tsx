@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { AppProvider } from '@/contexts/AppContext';
 import { AppRouter } from '@/components/AppRouter';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
@@ -47,10 +48,12 @@ function App() {
   }, []);
 
   return (
-    <AppProvider>
-      <AppRouter />
-      <OfflineIndicator />
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <AppRouter />
+        <OfflineIndicator />
+      </AppProvider>
+    </AuthProvider>
   );
 }
 

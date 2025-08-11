@@ -68,7 +68,6 @@ export function ShooterProjectPage() {
       {/* Persistent Header */}
       <PersistentHeader 
         project={currentProject}
-        user={state.user}
       />
 
       {/* Main Content */}

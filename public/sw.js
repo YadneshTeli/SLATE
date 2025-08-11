@@ -123,6 +123,12 @@ async function handleStaticRequest(request) {
   const cache = await caches.open(CACHE_NAME);
   
   try {
+    // Skip unsupported schemes
+    const url = new URL(request.url);
+    if (url.protocol === 'chrome-extension:' || url.protocol === 'moz-extension:' || url.protocol === 'safari-extension:') {
+      return fetch(request);
+    }
+    
     // Check cache first
     const cachedResponse = await cache.match(request);
     if (cachedResponse) {
@@ -206,10 +212,16 @@ async function queueForBackgroundSync(request) {
       const transaction = db.transaction(['pending-requests'], 'readwrite');
       const store = transaction.objectStore('pending-requests');
       
-      // Clone request body if it exists
+      // Clone request body before any operations if it exists
       let bodyData = null;
-      if (request.body) {
-        bodyData = await request.clone().text();
+      try {
+        if (request.body && !request.bodyUsed) {
+          const clonedRequest = request.clone();
+          bodyData = await clonedRequest.text();
+        }
+      } catch (error) {
+        console.log('[SW] Could not clone request body:', error);
+        bodyData = null;
       }
       
       const requestData = {

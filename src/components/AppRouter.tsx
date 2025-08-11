@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
-import { useApp } from '@/hooks/useApp';
-import { AuthPage } from '@/pages/AuthPage';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AuthForm } from '@/components/AuthForm';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ProjectsPage } from '@/pages/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
@@ -9,31 +9,14 @@ import { AdminDashboardPage } from '@/pages/AdminDashboardPage';
 import { AdminProjectsPage } from '@/pages/AdminProjectsPage';
 import { ShooterProjectPage } from '@/pages/ShooterProjectPage';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  requiredRole?: 'admin' | 'shooter';
-}
-
-function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { state } = useApp();
-  
-  // Check if user is authenticated
-  if (!state.user) {
-    return <Navigate to="/auth" replace />;
-  }
-  
-  // Check role requirement
-  if (requiredRole && state.user.role !== requiredRole) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  return <>{children}</>;
-}
-
 const router = createBrowserRouter([
   {
     path: '/auth',
-    element: <AuthPage />,
+    element: (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <AuthForm />
+      </div>
+    ),
   },
   {
     path: '/dashboard',
@@ -46,7 +29,7 @@ const router = createBrowserRouter([
   {
     path: '/projects',
     element: (
-      <ProtectedRoute requiredRole="admin">
+      <ProtectedRoute requireRole="admin">
         <ProjectsPage />
       </ProtectedRoute>
     ),
@@ -54,7 +37,7 @@ const router = createBrowserRouter([
   {
     path: '/projects/:projectId',
     element: (
-      <ProtectedRoute requiredRole="admin">
+      <ProtectedRoute requireRole="admin">
         <ProjectDetailPage />
       </ProtectedRoute>
     ),
@@ -70,7 +53,7 @@ const router = createBrowserRouter([
   {
     path: '/admin/dashboard',
     element: (
-      <ProtectedRoute requiredRole="admin">
+      <ProtectedRoute requireRole="admin">
         <AdminDashboardPage />
       </ProtectedRoute>
     ),
@@ -78,7 +61,7 @@ const router = createBrowserRouter([
   {
     path: '/admin/projects',
     element: (
-      <ProtectedRoute requiredRole="admin">
+      <ProtectedRoute requireRole="admin">
         <AdminProjectsPage />
       </ProtectedRoute>
     ),
@@ -86,7 +69,7 @@ const router = createBrowserRouter([
   {
     path: '/shooter/project',
     element: (
-      <ProtectedRoute requiredRole="shooter">
+      <ProtectedRoute requireRole="shooter">
         <ShooterProjectPage />
       </ProtectedRoute>
     ),

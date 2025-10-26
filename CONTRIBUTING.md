@@ -435,7 +435,7 @@ We especially welcome contributions in:
 
 - **GitHub Discussions**: Ask questions or discuss ideas
 - **GitHub Issues**: Report bugs or request features
-- **Email**: support@hmcstudios.com
+- **Email**: yadneshteli.dev@gmail.com
 
 ## 🙏 Thank You
 

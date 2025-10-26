@@ -580,13 +580,23 @@ interface ShotItem {
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
+Contributions are welcome! We appreciate your help in making SLATE better for the community.
 
+Please read our [Contributing Guidelines](CONTRIBUTING.md) for detailed information on:
+- Development workflow and setup
+- Coding standards and conventions
+- Commit message guidelines
+- Pull request process
+- Bug reporting and feature requests
+
+**Quick Start:**
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
+3. Commit changes following [Conventional Commits](https://www.conventionalcommits.org/)
 4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+5. Open a Pull Request with a clear description
+
+For more details, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 📄 License
 
@@ -607,7 +617,7 @@ Copyright © 2025 Yadnesh Teli
 
 For issues, questions, or feature requests:
 - **GitHub Issues**: [Create an issue](https://github.com/YadneshTeli/SLATE/issues)
-- **Email**: support@hmcstudios.com
+- **Email**: yadneshteli.dev@gmail.com
 - **Documentation**: [Full docs](#) (coming soon)
 
 ---

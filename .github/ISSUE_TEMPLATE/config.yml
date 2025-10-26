@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Questions & Discussions
+    url: https://github.com/YadneshTeli/SLATE/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 📖 Documentation
+    url: https://github.com/YadneshTeli/SLATE/blob/main/README.md
+    about: Read the comprehensive project documentation
+  - name: 🤝 Contributing Guide
+    url: https://github.com/YadneshTeli/SLATE/blob/main/CONTRIBUTING.md
+    about: Learn how to contribute to SLATE
+  - name: 📄 License Information
+    url: https://github.com/YadneshTeli/SLATE/blob/main/LICENSES/README.md
+    about: View license and attribution details
+  - name: 🔒 Security Vulnerability
+    url: https://github.com/YadneshTeli/SLATE/security/advisories/new
+    about: Report security vulnerabilities privately

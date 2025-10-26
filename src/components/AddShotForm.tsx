@@ -11,9 +11,15 @@ import type { ShotItem } from '@/types';
 interface AddShotFormProps {
   checklistId: string;
   onClose: () => void;
+  onAdd?: (shotData: {
+    title: string;
+    description: string;
+    type: 'photo' | 'video';
+    priority: 'must-have' | 'nice-to-have';
+  }) => void;
 }
 
-export function AddShotForm({ checklistId, onClose }: AddShotFormProps) {
+export function AddShotForm({ checklistId, onClose, onAdd }: AddShotFormProps) {
   const { addUserShotItem } = useApp();
   const [title, setTitle] = useState('');
   const [type, setType] = useState<'photo' | 'video'>('photo');
@@ -30,7 +36,14 @@ export function AddShotForm({ checklistId, onClose }: AddShotFormProps) {
       return;
     }
 
-    addUserShotItem(checklistId, title, type, priority, description);
+    // If onAdd callback is provided (for project creation), use it
+    if (onAdd) {
+      onAdd({ title, description, type, priority });
+    } else {
+      // Otherwise, add to global state (existing behavior)
+      addUserShotItem(checklistId, title, type, priority, description);
+    }
+    
     setTitle('');
     setDescription('');
     setErrors([]);

@@ -74,6 +74,10 @@
     animation: fade-in 0.5s ease-in-out;
   }
 
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
   .animate-slide-up {
     animation: slide-up 0.3s ease-out;
   }
@@ -92,6 +96,17 @@
 
   .animate-pulse-once {
     animation: pulse-once 0.6s ease-in-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -180,10 +195,89 @@
   }
 }
 
-/* Enhanced touch targets for mobile */
-@media (max-width: 768px) {
-  button, .checkbox, [role="checkbox"] {
+/* Mobile-first optimizations for one-handed use */
+@layer utilities {
+  /* Larger touch targets for mobile (44x44px minimum per Apple/Google guidelines) */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Safe area for notched devices */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-area-inset-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Enhanced touch targets and accessibility for mobile */
+@media (max-width: 640px) {
+  /* Minimum touch target sizes */
+  button:not(.no-min-size), 
+  .touch-target,
+  [role="button"],
+  [role="checkbox"],
+  input[type="checkbox"] {
     min-height: 44px;
     min-width: 44px;
   }
+  
+  /* Larger tap areas for checkboxes */
+  input[type="checkbox"] {
+    width: 32px;
+    height: 32px;
+  }
+  
+  /* Better spacing for mobile lists */
+  .mobile-list-item {
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  
+  /* Prevent text selection on interactive elements */
+  button, a, [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Optimize font sizes for mobile readability */
+  body {
+    font-size: 16px; /* Prevents auto-zoom on iOS */
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* Better scrolling on mobile */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
 }
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Balanced touch targets for tablets */
+  button, .touch-target {
+    min-height: 36px;
+    min-width: 36px;
+  }
+}
+
+/* Accessibility: Larger targets for users who need them */
+@media (prefers-reduced-motion: no-preference) {
+  .animate-on-tap:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease-in-out;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  button, input, select {
+    border-width: 2px;
+  }
+}
+

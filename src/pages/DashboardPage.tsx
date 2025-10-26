@@ -22,12 +22,8 @@ export function DashboardPage() {
     }
   }, [state.user, state.projects.length, state.currentProject, restoreLastViewedProject]);
 
-  if (!state.user) {
-    return <Navigate to="/auth" replace />;
-  }
-
   // Show loading while restoring project for shooters
-  if (state.user.role === 'shooter' && isRestoringProject) {
+  if (state.user?.role === 'shooter' && isRestoringProject) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -38,10 +34,20 @@ export function DashboardPage() {
     );
   }
 
-  // Redirect based on user role
-  if (state.user.role === 'admin') {
+  // Redirect based on user role (only if state.user is loaded)
+  if (state.user?.role === 'admin') {
     return <Navigate to="/admin/dashboard" replace />;
-  } else {
-    return <Navigate to="/shooter/project" replace />;
+  } else if (state.user?.role === 'shooter') {
+    return <Navigate to="/shooter/dashboard" replace />;
   }
+
+  // While state.user is loading, show a loading state
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading...</p>
+      </div>
+    </div>
+  );
 }

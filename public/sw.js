@@ -178,6 +178,12 @@ async function handleStaticRequest(request) {
       return fetch(request);
     }
     
+    // IMPORTANT: Don't cache external APIs (Google, Firebase, etc.)
+    if (!url.origin.includes('localhost') && !url.origin.includes('127.0.0.1') && !url.origin.includes(self.location.origin)) {
+      console.log('[SW] Skipping cache for external resource:', request.url);
+      return fetch(request);
+    }
+    
     // Check cache first
     const cachedResponse = await cache.match(request);
     if (cachedResponse) {

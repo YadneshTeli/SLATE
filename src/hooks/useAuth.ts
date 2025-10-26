@@ -8,3 +8,9 @@ export function useAuth() {
   }
   return context;
 }
+
+// Safe version that returns null if context not ready - for use during initialization
+export function useAuthSafe() {
+  const context = useContext(AuthContext);
+  return context === undefined ? null : context;
+}

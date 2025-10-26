@@ -6,8 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { RoleSelection } from '@/components/RoleSelection';
-import { auth } from '@/lib/firebase';
 
 interface AuthFormProps {
   onSuccess?: () => void;
@@ -24,15 +22,8 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
   const [resetMode, setResetMode] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetSent, setResetSent] = useState(false);
-  const [showRoleSelection, setShowRoleSelection] = useState(false);
-  const [googleUserData, setGoogleUserData] = useState<{
-    name: string;
-    email: string;
-  } | null>(null);
-
-  const { signIn, signUp, signInWithGoogle, completeGoogleSignup, sendPasswordReset, loading, error, clearError } = useAuth();
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  
+  const { signIn, signUp, signInWithGoogle, sendPasswordReset, loading, error, clearError } = useAuth();  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
 
@@ -58,38 +49,18 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
 
   const handleGoogleSignIn = async () => {
     clearError();
+    console.log('🔵 [AuthForm] Google Sign-In button clicked!');
     try {
+      console.log('🔵 [AuthForm] Calling signInWithGoogle...');
       await signInWithGoogle();
+      console.log('🔵 [AuthForm] signInWithGoogle completed successfully');
+      // If sign-in succeeds and user exists, redirect will happen via onAuthStateChanged
       onSuccess?.();
+      console.log('🔵 [AuthForm] onSuccess called');
     } catch (err: unknown) {
-      if (err instanceof Error && err.message === 'ROLE_SELECTION_REQUIRED') {
-        // Get the current user data from Firebase Auth
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-          setGoogleUserData({
-            name: currentUser.displayName || 'User',
-            email: currentUser.email || ''
-          });
-          setShowRoleSelection(true);
-        }
-      } else {
-        // Error is handled by the AuthContext
-        console.error('Google sign in error:', err);
-      }
-    }
-  };
-
-  const handleRoleSelection = async (selectedRole: 'admin' | 'shooter') => {
-    try {
-      await completeGoogleSignup(selectedRole);
-      setShowRoleSelection(false);
-      setGoogleUserData(null);
-      onSuccess?.();
-    } catch (err) {
-      console.error('Role selection error:', err);
-      // If there's an error, go back to the main form
-      setShowRoleSelection(false);
-      setGoogleUserData(null);
+      // Errors are handled by AuthContext
+      // ROLE_SELECTION_REQUIRED will trigger onboarding UI at App level
+      console.error('🔴 [AuthForm] Google sign in error:', err);
     }
   };
 
@@ -104,18 +75,6 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
     setResetSent(false);
     clearError();
   };
-
-  // Show role selection for new Google users
-  if (showRoleSelection && googleUserData) {
-    return (
-      <RoleSelection
-        userName={googleUserData.name}
-        userEmail={googleUserData.email}
-        onRoleSelect={handleRoleSelection}
-        loading={loading}
-      />
-    );
-  }
 
   if (resetMode && resetSent) {
     return (

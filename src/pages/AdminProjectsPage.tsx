@@ -140,23 +140,23 @@ export function AdminProjectsPage() {
     <PageTransition className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+          <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-3 xs:gap-0 min-h-[64px] sm:h-16 py-2 xs:py-0">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/admin/dashboard')}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1 sm:gap-2 p-1 sm:p-2 touch-manipulation min-h-[36px]"
               >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Dashboard
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm">Back</span>
               </Button>
-              <h1 className="text-xl font-bold text-slate-900">Project Management</h1>
+              <h1 className="text-base sm:text-xl font-bold text-slate-900">Project Management</h1>
             </div>
             <Button
               onClick={() => setShowCreateProject(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-white w-full xs:w-auto touch-manipulation min-h-[44px] text-sm sm:text-base"
             >
               <Plus className="w-4 h-4 mr-2" />
               Create Project
@@ -166,7 +166,7 @@ export function AdminProjectsPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
         {/* Create Project Form */}
         {showCreateProject && (
           <FadeIn className="mb-8">
@@ -228,24 +228,24 @@ export function AdminProjectsPage() {
         )}
 
         {/* Projects List */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <FadeIn>
-            <h2 className="text-2xl font-bold text-slate-900">All Projects</h2>
-            <p className="text-slate-600">Manage your projects, checklists, and shot lists</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">All Projects</h2>
+            <p className="text-sm sm:text-base text-slate-600">Manage your projects, checklists, and shot lists</p>
           </FadeIn>
 
           {state.projects.length === 0 ? (
             <FadeIn delay={0.1}>
               <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <CheckSquare className="h-12 w-12 text-slate-400 mb-4" />
-                  <h3 className="text-lg font-medium text-slate-900 mb-2">No Projects Yet</h3>
-                  <p className="text-slate-600 mb-4 text-center max-w-md">
+                <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12">
+                  <CheckSquare className="h-10 w-10 sm:h-12 sm:w-12 text-slate-400 mb-3 sm:mb-4" />
+                  <h3 className="text-base sm:text-lg font-medium text-slate-900 mb-2">No Projects Yet</h3>
+                  <p className="text-sm sm:text-base text-slate-600 mb-4 text-center max-w-md px-4">
                     Create your first project to start organizing shot lists for your team
                   </p>
                   <Button
                     onClick={() => setShowCreateProject(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    className="bg-blue-600 hover:bg-blue-700 text-white touch-manipulation min-h-[44px]"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Create First Project
@@ -254,7 +254,7 @@ export function AdminProjectsPage() {
               </Card>
             </FadeIn>
           ) : (
-            <StaggeredList className="space-y-6">
+            <StaggeredList className="space-y-4 sm:space-y-6">
               {state.projects.map((project) => {
                 const stats = getProjectStats(project.id);
                 const checklists = getProjectChecklists(project.id);
@@ -262,34 +262,35 @@ export function AdminProjectsPage() {
 
                 return (
                   <Card key={project.id} className="overflow-hidden">
-                    <CardHeader className="pb-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <CardTitle className="flex items-center gap-2">
-                            {project.name}
-                            <Badge variant="outline" className="text-xs">
+                    <CardHeader className="pb-3 sm:pb-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
+                        <div className="flex-1 w-full">
+                          <CardTitle className="flex flex-col xs:flex-row items-start xs:items-center gap-2 text-base sm:text-lg">
+                            <span className="break-words">{project.name}</span>
+                            <Badge variant="outline" className="text-xs whitespace-nowrap flex-shrink-0">
                               {stats.completedShots}/{stats.totalShots} shots
                             </Badge>
                           </CardTitle>
-                          <CardDescription className="mt-1">
+                          <CardDescription className="mt-1 text-sm">
                             {project.description || 'No description provided'}
                           </CardDescription>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-slate-600">
                             <div className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              {formatDate(project.date)}
+                              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                              <span className="truncate">{project.date ? formatDate(project.date) : 'No date set'}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <Users className="w-4 h-4" />
+                              <Users className="w-3 h-3 sm:w-4 sm:h-4" />
                               {project.assignments.length} shooters
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setSelectedProject(isExpanded ? null : project.id)}
+                            className="w-full sm:w-auto touch-manipulation min-h-[36px]"
                           >
                             {isExpanded ? 'Collapse' : 'Expand'}
                           </Button>

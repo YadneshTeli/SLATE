@@ -3,11 +3,16 @@ import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      jsxRuntime: 'automatic',
+    })
+  ],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
+    dedupe: ['react', 'react-dom'],
   },
   server: {
     host: '0.0.0.0', // Allow external connections
@@ -47,8 +52,16 @@ export default defineConfig({
   clearScreen: false,
   // Enhanced development settings
   optimizeDeps: {
-    include: ['react', 'react-dom'],
-    force: false
+    include: [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
+      'react-dom/client'
+    ],
+    esbuildOptions: {
+      resolveExtensions: ['.web.js', '.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
+    },
   },
   // Enhanced build configuration
   build: {

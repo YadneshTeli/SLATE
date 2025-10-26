@@ -127,6 +127,17 @@ export const userService = {
     }
   },
 
+  async getAll(): Promise<User[]> {
+    try {
+      const usersRef = ref(database, PATHS.USERS);
+      const snapshot = await get(usersRef);
+      return convertSnapshotList<User>(snapshot);
+    } catch (error) {
+      handleRealtimeError('get all users', error);
+      throw error;
+    }
+  },
+
   async update(id: string, updates: Partial<User>): Promise<void> {
     try {
       const userRef = ref(database, `${PATHS.USERS}/${id}`);
@@ -395,13 +406,21 @@ export const shotItemService = {
       if (snapshot.exists()) {
         const currentData = snapshot.val();
         const isCompleted = currentData.isCompleted;
+        const newCompletionState = !isCompleted;
+        
+        console.log(`📝 [Firebase] Toggling shot ${id}: ${isCompleted ? 'completed → uncompleted' : 'uncompleted → completed'}`);
         
         await update(shotItemRef, {
-          isCompleted: !isCompleted,
-          completedAt: !isCompleted ? serverTimestamp() : null,
-          completedBy: !isCompleted ? userId : null,
+          isCompleted: newCompletionState,
+          completedAt: newCompletionState ? serverTimestamp() : null,
+          completedBy: newCompletionState ? userId : null,
           updatedAt: serverTimestamp()
         });
+        
+        console.log(`✅ [Firebase] Shot ${id} successfully ${newCompletionState ? 'marked as completed' : 'unmarked'}`);
+      } else {
+        console.error(`❌ [Firebase] Shot item ${id} not found`);
+        throw new Error(`Shot item ${id} not found`);
       }
     } catch (error) {
       handleRealtimeError('toggle shot item completion', error);

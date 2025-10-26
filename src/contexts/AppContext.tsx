@@ -1,7 +1,8 @@
 import React, { createContext, useReducer, useCallback, useEffect } from 'react';
 import type { AppState, User, Project, Checklist, ShotItem } from '@/types';
-import { initializeDemoData } from '@/utils/demoData';
 import { offlineDataManager } from '@/utils/offlineDataManager';
+import { shotItemService, projectService, checklistService } from '@/lib/realtimeService';
+import { useAuthSafe } from '@/hooks/useAuth';
 
 // Action types
 type AppAction =
@@ -10,19 +11,21 @@ type AppAction =
   | { type: 'SET_PROJECTS'; payload: Project[] }
   | { type: 'ADD_PROJECT'; payload: Project }
   | { type: 'UPDATE_PROJECT'; payload: Project }
+  | { type: 'REMOVE_PROJECT'; payload: string }
   | { type: 'SET_CHECKLISTS'; payload: Checklist[] }
   | { type: 'ADD_CHECKLIST'; payload: Checklist }
   | { type: 'UPDATE_CHECKLIST'; payload: Checklist }
+  | { type: 'REMOVE_CHECKLIST'; payload: string }
   | { type: 'SET_SHOT_ITEMS'; payload: ShotItem[] }
   | { type: 'ADD_SHOT_ITEM'; payload: ShotItem }
   | { type: 'UPDATE_SHOT_ITEM'; payload: ShotItem }
+  | { type: 'REMOVE_SHOT_ITEM'; payload: string }
   | { type: 'TOGGLE_SHOT_COMPLETION'; payload: { id: string; userId: string } }
   | { type: 'SET_OFFLINE_STATUS'; payload: boolean }
   | { type: 'SET_LAST_SYNC'; payload: Date }
   | { type: 'ADD_PENDING_SYNC'; payload: string }
   | { type: 'REMOVE_PENDING_SYNC'; payload: string }
-  | { type: 'CLEAR_PENDING_SYNC' }
-  | { type: 'INITIALIZE_DEMO_DATA'; payload: { projects: Project[]; checklists: Checklist[]; shotItems: ShotItem[] } };
+  | { type: 'CLEAR_PENDING_SYNC' };
 
 // Initial state
 const initialState: AppState = {
@@ -62,6 +65,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
           : state.currentProject,
       };
     
+    case 'REMOVE_PROJECT':
+      return {
+        ...state,
+        projects: state.projects.filter(p => p.id !== action.payload),
+        currentProject: state.currentProject?.id === action.payload ? null : state.currentProject,
+      };
+    
     case 'SET_CHECKLISTS':
       return { ...state, checklists: action.payload };
     
@@ -76,6 +86,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ),
       };
     
+    case 'REMOVE_CHECKLIST':
+      return {
+        ...state,
+        checklists: state.checklists.filter(c => c.id !== action.payload),
+      };
+    
     case 'SET_SHOT_ITEMS':
       return { ...state, shotItems: action.payload };
     
@@ -88,6 +104,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
         shotItems: state.shotItems.map(item => 
           item.id === action.payload.id ? action.payload : item
         ),
+      };
+    
+    case 'REMOVE_SHOT_ITEM':
+      return {
+        ...state,
+        shotItems: state.shotItems.filter(item => item.id !== action.payload),
       };
     
     case 'TOGGLE_SHOT_COMPLETION':
@@ -130,14 +152,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'CLEAR_PENDING_SYNC':
       return { ...state, pendingSyncItems: [] };
     
-    case 'INITIALIZE_DEMO_DATA':
-      return {
-        ...state,
-        projects: action.payload.projects,
-        checklists: action.payload.checklists,
-        shotItems: action.payload.shotItems,
-      };
-    
     default:
       return state;
   }
@@ -165,7 +179,6 @@ interface AppContextType {
     priority?: ShotItem['priority'],
     description?: string
   ) => void;
-  initializeDemoDataForUser: (userId: string) => void;
   // Project management
   setCurrentProject: (project: Project | null) => void;
   restoreLastViewedProject: () => void;
@@ -181,6 +194,16 @@ export { AppContext };
 // Provider component
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  
+  // Get auth user safely - won't throw if AuthContext not ready
+  const auth = useAuthSafe();
+  const authUser = auth?.user || null;
+
+  // Sync user from AuthContext to AppContext
+  useEffect(() => {
+    console.log('🟠 [AppContext] Syncing user from AuthContext:', authUser?.email || 'null');
+    dispatch({ type: 'SET_USER', payload: authUser });
+  }, [authUser]);
 
   // Network status monitoring
   useEffect(() => {
@@ -195,6 +218,51 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  // Load all data from Firebase when user is authenticated
+  useEffect(() => {
+    if (!authUser) {
+      console.log('🟠 [AppContext] No user authenticated, skipping data load');
+      return;
+    }
+
+    const loadAllData = async () => {
+      try {
+        console.log('🟠 [AppContext] Loading all data from Firebase...');
+        
+        // Load all projects
+        const projects = await projectService.getAll();
+        console.log(`✅ Loaded ${projects.length} project(s) from Firebase`);
+        
+        // Load all checklists
+        const allChecklists: Checklist[] = [];
+        for (const project of projects) {
+          const projectChecklists = await checklistService.getByProjectId(project.id!);
+          allChecklists.push(...projectChecklists);
+        }
+        console.log(`✅ Loaded ${allChecklists.length} checklist(s) from Firebase`);
+        
+        // Load all shot items
+        const allShotItems: ShotItem[] = [];
+        for (const checklist of allChecklists) {
+          const checklistShots = await shotItemService.getByChecklistId(checklist.id!);
+          allShotItems.push(...checklistShots);
+        }
+        console.log(`✅ Loaded ${allShotItems.length} shot item(s) from Firebase`);
+        
+        // Update state
+        dispatch({ type: 'SET_PROJECTS', payload: projects });
+        dispatch({ type: 'SET_CHECKLISTS', payload: allChecklists });
+        dispatch({ type: 'SET_SHOT_ITEMS', payload: allShotItems });
+        
+        console.log('🎉 [AppContext] All data loaded successfully!');
+      } catch (error) {
+        console.error('❌ [AppContext] Error loading data from Firebase:', error);
+      }
+    };
+
+    loadAllData();
+  }, [authUser]);
 
   // Computed values
   const currentProjectItems = state.shotItems.filter(item =>
@@ -219,37 +287,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Actions
   const toggleShotCompletion = useCallback(async (shotId: string) => {
     if (state.user) {
-      dispatch({
-        type: 'TOGGLE_SHOT_COMPLETION',
-        payload: { id: shotId, userId: state.user.id },
-      });
-
-      // Save to offline storage
       try {
+        // Get current state to log the toggle direction
         const shotItem = state.shotItems.find(item => item.id === shotId);
-        if (shotItem) {
-          const updatedShot = {
-            ...shotItem,
-            isCompleted: !shotItem.isCompleted,
-            completedAt: !shotItem.isCompleted ? new Date() : undefined,
-            completedBy: !shotItem.isCompleted ? state.user.id : undefined,
-            updatedAt: new Date(),
-          };
+        const willBeCompleted = shotItem ? !shotItem.isCompleted : true;
+        
+        // Update in Firebase first
+        await shotItemService.toggleCompletion(shotId, state.user.id);
+        console.log(`✅ Shot ${willBeCompleted ? 'completed' : 'uncompleted'} in Firebase:`, shotId);
+        
+        // Then update local state
+        dispatch({
+          type: 'TOGGLE_SHOT_COMPLETION',
+          payload: { id: shotId, userId: state.user.id },
+        });
 
-          await offlineDataManager.saveData('shots', {
-            id: updatedShot.id,
-            projectId: state.currentProject?.id || '',
-            type: updatedShot.type,
-            priority: updatedShot.priority,
-            description: updatedShot.description || '',
-            addedBy: updatedShot.createdBy,
-            title: updatedShot.title,
-            checklistId: updatedShot.checklistId
-          });
+        // Save to offline storage as backup
+        try {
+          const shotItem = state.shotItems.find(item => item.id === shotId);
+          if (shotItem) {
+            const updatedShot = {
+              ...shotItem,
+              isCompleted: !shotItem.isCompleted,
+              completedAt: !shotItem.isCompleted ? new Date() : undefined,
+              completedBy: !shotItem.isCompleted ? state.user.id : undefined,
+              updatedAt: new Date(),
+            };
 
-          // Queue for sync if offline
-          if (state.isOffline) {
-            const shotData = {
+            await offlineDataManager.saveData('shots', {
               id: updatedShot.id,
               projectId: state.currentProject?.id || '',
               type: updatedShot.type,
@@ -258,12 +323,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               addedBy: updatedShot.createdBy,
               title: updatedShot.title,
               checklistId: updatedShot.checklistId
-            };
-            await offlineDataManager.queueForSync(shotData, 'update', 'shot');
+            });
+
+            // Queue for sync if offline
+            if (state.isOffline) {
+              const shotData = {
+                id: updatedShot.id,
+                projectId: state.currentProject?.id || '',
+                type: updatedShot.type,
+                priority: updatedShot.priority,
+                description: updatedShot.description || '',
+                addedBy: updatedShot.createdBy,
+                title: updatedShot.title,
+                checklistId: updatedShot.checklistId
+              };
+              await offlineDataManager.queueForSync(shotData, 'update', 'shot');
+            }
           }
+        } catch (error) {
+          console.error('Failed to save shot completion to offline storage:', error);
         }
       } catch (error) {
-        console.error('Failed to save shot completion offline:', error);
+        console.error('❌ Failed to toggle shot completion in Firebase:', error);
+        console.error('Error details:', error);
+        // Still update local state so user sees immediate feedback
+        // Changes will sync to Firebase when connection is restored
+        dispatch({
+          type: 'TOGGLE_SHOT_COMPLETION',
+          payload: { id: shotId, userId: state.user.id },
+        });
       }
     }
   }, [state.user, state.shotItems, state.currentProject?.id, state.isOffline]);
@@ -276,41 +364,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     description?: string
   ) => {
     if (state.user) {
-      const newItem: ShotItem = {
-        id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        checklistId,
-        title,
-        type,
-        priority,
-        description,
-        isCompleted: false,
-        createdBy: state.user.id,
-        isUserAdded: true,
-        order: currentProjectItems.length,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      
-      dispatch({ type: 'ADD_SHOT_ITEM', payload: newItem });
-      dispatch({ type: 'ADD_PENDING_SYNC', payload: newItem.id });
-
-      // Save to offline storage
       try {
-        await offlineDataManager.saveData('shots', {
-          id: newItem.id,
-          projectId: state.currentProject?.id || '',
-          type: newItem.type,
-          priority: newItem.priority,
-          description: newItem.description || '',
-          addedBy: newItem.createdBy,
-          title: newItem.title,
-          checklistId: newItem.checklistId
-        });
-
-        // Queue for sync if offline
-        if (state.isOffline) {
-          const shotData = {
-            id: newItem.id,
+        const newItem: Omit<ShotItem, 'id'> = {
+          checklistId,
+          title,
+          type,
+          priority,
+          description,
+          isCompleted: false,
+          createdBy: state.user.id,
+          isUserAdded: true,
+          order: currentProjectItems.length,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        
+        // Save to Firebase
+        const shotId = await shotItemService.create(newItem);
+        console.log('✅ User shot item created in Firebase:', shotId);
+        
+        // Add to local state
+        dispatch({ type: 'ADD_SHOT_ITEM', payload: { ...newItem, id: shotId } });
+        
+        // Save to offline storage for backup
+        try {
+          await offlineDataManager.saveData('shots', {
+            id: shotId,
             projectId: state.currentProject?.id || '',
             type: newItem.type,
             priority: newItem.priority,
@@ -318,29 +397,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addedBy: newItem.createdBy,
             title: newItem.title,
             checklistId: newItem.checklistId
-          };
-          await offlineDataManager.queueForSync(shotData, 'create', 'shot');
+          });
+
+          // Queue for sync if offline
+          if (state.isOffline) {
+            const shotData = {
+              id: shotId,
+              projectId: state.currentProject?.id || '',
+              type: newItem.type,
+              priority: newItem.priority,
+              description: newItem.description || '',
+              addedBy: newItem.createdBy,
+              title: newItem.title,
+              checklistId: newItem.checklistId
+            };
+            await offlineDataManager.queueForSync(shotData, 'create', 'shot');
+          }
+        } catch (error) {
+          console.error('Failed to save shot item to offline storage:', error);
         }
       } catch (error) {
-        console.error('Failed to save shot item offline:', error);
+        console.error('❌ Failed to create shot item in Firebase:', error);
+        throw error;
       }
     }
   }, [state.user, state.currentProject?.id, state.isOffline, currentProjectItems.length]);
-
-  const initializeDemoDataForUser = useCallback((userId: string) => {
-    // Initialize demo data if not already loaded
-    if (state.projects.length === 0) {
-      const demoData = initializeDemoData(userId);
-      dispatch({ 
-        type: 'INITIALIZE_DEMO_DATA', 
-        payload: {
-          projects: demoData.projects,
-          checklists: demoData.checklists,
-          shotItems: demoData.shotItems,
-        }
-      });
-    }
-  }, [state.projects.length]);
 
   // Last-viewed project persistence
   const setCurrentProject = useCallback((project: Project | null) => {
@@ -473,9 +554,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [state.projects, state.user?.id, state.currentProject?.id]);
 
   const getAssignedProjects = useCallback((userId: string) => {
-    return state.projects.filter(project => 
-      project.assignments.some(assignment => assignment.userId === userId)
-    );
+    console.log('🔍 [getAssignedProjects] Looking for projects assigned to:', userId);
+    console.log('🔍 [getAssignedProjects] Total projects in state:', state.projects.length);
+    
+    const assignedProjects = state.projects.filter(project => {
+      const hasAssignments = project.assignments && project.assignments.length > 0;
+      const isAssigned = hasAssignments && project.assignments.some(assignment => assignment.userId === userId);
+      
+      console.log(`  - Project "${project.name}":`, {
+        id: project.id,
+        hasAssignments,
+        assignments: project.assignments,
+        isAssigned
+      });
+      
+      return isAssigned;
+    });
+    
+    console.log('🔍 [getAssignedProjects] Found assigned projects:', assignedProjects.length);
+    return assignedProjects;
   }, [state.projects]);
 
   const contextValue: AppContextType = {
@@ -485,7 +582,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     currentProjectProgress,
     toggleShotCompletion,
     addUserShotItem,
-    initializeDemoDataForUser,
     setCurrentProject,
     restoreLastViewedProject,
     assignUserToProject,

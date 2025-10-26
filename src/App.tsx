@@ -3,10 +3,14 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { AppProvider } from '@/contexts/AppContext';
 import { AppRouter } from '@/components/AppRouter';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
+import { UserOnboarding, type OnboardingData } from '@/components/UserOnboarding';
+import { useAuth } from '@/hooks/useAuth';
 import { offlineDataManager } from '@/utils/offlineDataManager';
 import './App.css';
 
-function App() {
+function AppContent() {
+  const { needsOnboarding, onboardingEmail, onboardingName, completeOnboarding } = useAuth();
+
   useEffect(() => {
     // Initialize offline data management
     const initializeOfflineSupport = async () => {
@@ -47,14 +51,52 @@ function App() {
     registerServiceWorker();
   }, []);
 
+  const handleOnboardingComplete = async (data: OnboardingData) => {
+    try {
+      console.log('[App] Completing onboarding with data:', data);
+      await completeOnboarding({
+        role: data.role,
+        name: data.name,
+        phoneNumber: data.phoneNumber
+      });
+      console.log('[App] Onboarding completed successfully');
+    } catch (error) {
+      console.error('Failed to complete onboarding:', error);
+    }
+  };
+
+  console.log('🟡 [App] ====== RENDERING APP ======');
+  console.log('🟡 [App] needsOnboarding:', needsOnboarding, 'email:', onboardingEmail);
+
+  if (needsOnboarding) {
+    console.log('🟡 [App] Rendering onboarding UI');
+    return (
+      <UserOnboarding
+        initialEmail={onboardingEmail || undefined}
+        initialName={onboardingName || undefined}
+        onComplete={handleOnboardingComplete}
+      />
+    );
+  }
+
+  console.log('🟡 [App] Rendering main app router');
+  return (
+    <>
+      <AppRouter />
+      <OfflineIndicator />
+    </>
+  );
+}
+
+function App() {
   return (
     <AuthProvider>
       <AppProvider>
-        <AppRouter />
-        <OfflineIndicator />
+        <AppContent />
       </AppProvider>
     </AuthProvider>
   );
 }
 
 export default App;
+

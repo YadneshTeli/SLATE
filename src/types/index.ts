@@ -17,7 +17,7 @@ export interface Project {
   id: string;
   name: string;
   description?: string;
-  date: Date;
+  date?: Date; // Optional - not all projects have a specific date
   status: 'draft' | 'active' | 'completed' | 'archived';
   createdBy: string; // User ID
   createdAt: Date;

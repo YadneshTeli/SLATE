@@ -10,4 +10,11 @@ export { Input } from './ui/input'
 export { AuthForm } from './AuthForm'
 export { ProtectedRoute, RoleBased } from './ProtectedRoute'
 export { UserProfile, UserAvatar } from './UserProfile'
-export { RoleSelection } from './RoleSelection'
+export { RoleSelection } from './RoleSelection';
+export { SyncStatusIndicator } from './SyncStatusIndicator';
+export { TeamProgressDashboard } from './TeamProgressDashboard';
+export { ShooterDashboard } from './ShooterDashboard';
+export { UserManagement } from './UserManagement';
+export { UserOnboarding } from './UserOnboarding';
+export type { OnboardingData } from './UserOnboarding';
+

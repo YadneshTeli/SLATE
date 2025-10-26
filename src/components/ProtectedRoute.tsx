@@ -1,23 +1,24 @@
 import type { ReactNode } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { AuthForm } from '@/components/AuthForm';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: ReactNode;
   requireRole?: 'admin' | 'shooter';
-  fallback?: ReactNode;
 }
 
 export function ProtectedRoute({ 
   children, 
-  requireRole,
-  fallback 
+  requireRole
 }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
 
+  console.log('🟣 [ProtectedRoute] user:', user?.email || 'null', 'loading:', loading, 'requireRole:', requireRole);
+
   // Show loading spinner while checking authentication
   if (loading) {
+    console.log('🟣 [ProtectedRoute] Showing loading spinner');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -30,15 +31,13 @@ export function ProtectedRoute({
 
   // Show auth form if not authenticated
   if (!user) {
-    return fallback || (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <AuthForm />
-      </div>
-    );
+    console.log('🟣 [ProtectedRoute] No user found, redirecting to /auth');
+    return <Navigate to="/auth" replace />;
   }
 
   // Check role requirement
   if (requireRole && user.role !== requireRole) {
+    console.log('🟣 [ProtectedRoute] Role mismatch. Required:', requireRole, 'User has:', user.role);
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="text-center space-y-4 max-w-md">
@@ -60,6 +59,7 @@ export function ProtectedRoute({
   }
 
   // User is authenticated and has correct role
+  console.log('🟣 [ProtectedRoute] User authorized, rendering protected content');
   return <>{children}</>;
 }
 

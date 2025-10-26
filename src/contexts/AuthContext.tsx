@@ -7,10 +7,14 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
+  needsOnboarding: boolean;
+  onboardingEmail: string | null;
+  onboardingName: string | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string, role?: 'admin' | 'shooter', phoneNumber?: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   completeGoogleSignup: (role: 'admin' | 'shooter') => Promise<void>;
+  completeOnboarding: (data: { role: 'admin' | 'shooter'; name: string; phoneNumber?: string }) => Promise<void>;
   handleGoogleRedirectResult: () => Promise<void>;
   signOut: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
@@ -28,10 +32,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [onboardingEmail, setOnboardingEmail] = useState<string | null>(null);
+  const [onboardingName, setOnboardingName] = useState<string | null>(null);
 
   // Listen to authentication state changes and handle redirects
   useEffect(() => {
+    console.log('[AuthContext] Setting up auth state listener');
     const unsubscribe = authService.onAuthStateChanged((user) => {
+      console.log('[AuthContext] Auth state changed, user:', user?.email || 'null');
       setUser(user);
       setLoading(false);
     });
@@ -46,12 +55,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('[AuthContext] Starting email sign-in for:', email);
       setLoading(true);
       setError(null);
       const user = await authService.signInWithEmail(email, password);
+      console.log('[AuthContext] Email sign-in succeeded, user:', user?.email || 'null');
       setUser(user);
     } catch (err) {
-      console.error('Sign in error:', err);
+      console.error('[AuthContext] Sign in error:', err);
       if (err instanceof Error) {
         if (err.message.includes('user-not-found')) {
           setError('No account found with this email address.');
@@ -100,18 +111,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signInWithGoogle = async () => {
     try {
+      console.log('🟢 [AuthContext] ====== GOOGLE SIGN-IN STARTED ======');
       setLoading(true);
       setError(null);
       const user = await authService.signInWithGoogle();
+      console.log('🟢 [AuthContext] Google sign-in succeeded, user:', user?.email || 'null');
+      console.log('🟢 [AuthContext] Setting user state...');
       setUser(user);
+      console.log('🟢 [AuthContext] User state set successfully');
     } catch (err) {
-      console.error('Google sign in error:', err);
+      console.error('🔴 [AuthContext] Google sign in error:', err);
       if (err instanceof Error) {
         if (err.message === 'ROLE_SELECTION_REQUIRED') {
-          // Don't set this as an error - it's expected for new users
-          console.log('Role selection required for new Google user');
-          setError('Please select your role to complete registration.');
-          // The AuthForm component should handle showing role selection UI
+          // Trigger onboarding flow for new Google users
+          console.log('[AuthContext] ROLE_SELECTION_REQUIRED detected - triggering onboarding');
+          const firebaseUser = authService.getCurrentUser();
+          if (firebaseUser) {
+            console.log('[AuthContext] Firebase user found:', firebaseUser.email);
+            setOnboardingEmail(firebaseUser.email || null);
+            setOnboardingName(firebaseUser.displayName || null);
+            setNeedsOnboarding(true);
+            console.log('[AuthContext] Onboarding state set to true');
+          } else {
+            console.error('[AuthContext] No Firebase user found for onboarding');
+          }
+          setError(null); // Clear any errors
         } else if (err.message.includes('popup-closed-by-user')) {
           setError('Sign in was cancelled.');
         } else if (err.message.includes('popup-blocked')) {
@@ -135,11 +159,54 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setError(null);
       const user = await authService.completeGoogleSignup(role);
       setUser(user);
+      setNeedsOnboarding(false);
+      setOnboardingEmail(null);
+      setOnboardingName(null);
     } catch (err) {
       console.error('Complete Google signup error:', err);
       setError('Failed to complete Google signup.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const completeOnboarding = async (data: { role: 'admin' | 'shooter'; name: string; phoneNumber?: string }) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Update user profile if name changed
+      const firebaseUser = authService.getCurrentUser();
+      if (firebaseUser && data.name !== firebaseUser.displayName) {
+        await authService.updateUserProfile({ name: data.name });
+      }
+      
+      // Complete signup with role and phone number
+      const user = await authService.completeGoogleSignup(data.role);
+      
+      // Update phone number if provided
+      if (user && data.phoneNumber) {
+        await authService.updateUserProfile({ name: data.name });
+      }
+      
+      // Clear any pending auth state to prevent re-triggering sign-in flow
+      localStorage.removeItem('slate-pending-google-auth');
+      
+      // Set user state first
+      setUser(user);
+      
+      // Then clear onboarding flags
+      setNeedsOnboarding(false);
+      setOnboardingEmail(null);
+      setOnboardingName(null);
+      
+      // Clear loading state to allow navigation
+      setLoading(false);
+    } catch (err) {
+      console.error('Complete onboarding error:', err);
+      setError('Failed to complete onboarding.');
+      setLoading(false);
+      throw err;
     }
   };
 
@@ -151,8 +218,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (err) {
       if (err instanceof Error && err.message === 'ROLE_SELECTION_REQUIRED') {
-        console.log('Role selection required after redirect');
-        setError('Please select your role to complete registration.');
+        console.log('Initiating onboarding after redirect');
+        const firebaseUser = authService.getCurrentUser();
+        if (firebaseUser) {
+          setOnboardingEmail(firebaseUser.email || null);
+          setOnboardingName(firebaseUser.displayName || null);
+          setNeedsOnboarding(true);
+        }
       } else {
         console.error('Error handling Google redirect result:', err);
         // Don't show error for redirect result failures - just ignore them
@@ -212,10 +284,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     loading,
     error,
+    needsOnboarding,
+    onboardingEmail,
+    onboardingName,
     signIn,
     signUp,
     signInWithGoogle,
     completeGoogleSignup,
+    completeOnboarding,
     handleGoogleRedirectResult,
     signOut,
     sendPasswordReset,

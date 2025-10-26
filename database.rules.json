@@ -2,34 +2,28 @@
   "rules": {
     "users": {
       ".read": "auth != null",
-      ".indexOn": ["email"],
-      "$userId": {
-        ".write": "$userId === auth.uid || !root.child('users').child($userId).exists()"
-      }
+      ".write": "auth != null",
+      ".indexOn": ["email", "role"]
     },
     "projects": {
-      "$projectId": {
-        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('projects').child($projectId).child('assignments').hasChildren() && root.child('projects').child($projectId).child('assignments').hasChild(auth.uid))",
-        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
-      }
+      ".read": "auth != null",
+      ".write": "auth != null",
+      ".indexOn": ["createdBy", "status", "createdAt", "date"]
     },
     "checklists": {
-      "$checklistId": {
-        ".read": "auth != null && root.child('checklists').child($checklistId).child('projectId').val() != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('projects').child(root.child('checklists').child($checklistId).child('projectId').val()).child('assignments').hasChild(auth.uid))",
-        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
-      }
+      ".read": "auth != null",
+      ".write": "auth != null",
+      ".indexOn": ["projectId"]
     },
     "shotItems": {
-      "$shotItemId": {
-        ".read": "auth != null",
-        ".write": "auth != null"
-      }
+      ".read": "auth != null",
+      ".write": "auth != null",
+      ".indexOn": ["checklistId", "projectId", "assignedTo", "completed"]
     },
     "projectProgress": {
-      "$progressId": {
-        ".read": "auth != null",
-        ".write": "auth != null"
-      }
+      ".read": "auth != null",
+      ".write": "auth != null",
+      ".indexOn": ["projectId", "userId"]
     }
   }
 }

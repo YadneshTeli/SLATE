@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import type { User } from '@/types';
 
 export function AuthPage() {
-  const { state, dispatch, initializeDemoDataForUser } = useApp();
+  const { state, dispatch } = useApp();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,28 +21,21 @@ export function AuthPage() {
       try {
         const user = JSON.parse(savedUser);
         dispatch({ type: 'SET_USER', payload: user });
-        
-        // Initialize demo data for restored user
-        initializeDemoDataForUser(user.id);
       } catch (error) {
         console.error('Failed to parse saved user:', error);
         localStorage.removeItem('slateUser');
       }
     }
-  }, [dispatch, initializeDemoDataForUser]);
+  }, [dispatch]);
 
   const handleLogin = (user: User) => {
     localStorage.setItem('slateUser', JSON.stringify(user));
     dispatch({ type: 'SET_USER', payload: user });
-    
-    // Initialize demo data for all users
-    initializeDemoDataForUser(user.id);
-    
     navigate('/dashboard');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-3 sm:p-4">
       <AuthComponent onLogin={handleLogin} />
     </div>
   );

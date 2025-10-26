@@ -5,6 +5,7 @@ import { Calendar, Users, CheckCircle, AlertCircle, Clock, TrendingUp, Camera, V
 import { gsap } from 'gsap';
 import { PageTransition, FadeIn, ScaleIn, StaggeredList } from '@/components/animations/PageTransitions';
 import { useApp } from '@/hooks/useApp';
+import { formatDate } from '@/utils';
 import type { ShotItem, Project } from '@/types';
 
 interface DashboardStatsProps {
@@ -222,7 +223,7 @@ export function EnhancedAdminDashboard() {
               </Badge>
               <span className="text-sm text-slate-500 flex items-center">
                 <Calendar className="w-4 h-4 mr-1" />
-                {new Date(currentProject.date).toLocaleDateString()}
+                {currentProject.date ? formatDate(new Date(currentProject.date)) : 'No date set'}
               </span>
             </div>
           </div>

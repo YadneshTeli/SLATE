@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Users, MapPin, Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { PageTransition, FadeIn, StaggeredList } from '@/components/animations/PageTransitions';
 import { useApp } from '@/hooks/useApp';
-import type { Project, ProjectAssignment } from '@/types';
+import { userService } from '@/lib/realtimeService';
+import type { Project, ProjectAssignment, User } from '@/types';
 
 interface UserManagementProps {
   project: Project;
@@ -19,21 +20,31 @@ interface NewAssignmentForm {
   zone: string;
 }
 
-// Demo users that can be assigned to projects
-const availableUsers = [
-  { id: 'vittal', name: 'Vittal', email: 'vittal@hmcstudios.com', role: 'shooter' as const },
-  { id: 'shravan', name: 'Shravan', email: 'shravan@hmcstudios.com', role: 'shooter' as const },
-  { id: 'rahul', name: 'Rahul', email: 'rahul@hmcstudios.com', role: 'shooter' as const },
-  { id: 'priya', name: 'Priya', email: 'priya@hmcstudios.com', role: 'shooter' as const },
-];
-
 export function UserManagement({ project, onUpdateProject }: UserManagementProps) {
   const { dispatch } = useApp();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState<string | null>(null);
   const [newAssignment, setNewAssignment] = useState<NewAssignmentForm>({ userId: '', zone: '' });
   const [editingZone, setEditingZone] = useState('');
+  const [allUsers, setAllUsers] = useState<User[]>([]);
 
+  // Fetch all users from Firebase
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const users = await userService.getAll();
+        setAllUsers(users);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Get available shooters (users with shooter role)
+  const availableShooters = allUsers.filter(user => user.role === 'shooter');
+  
   const handleAddAssignment = () => {
     if (!newAssignment.userId || !newAssignment.zone) return;
 
@@ -92,13 +103,14 @@ export function UserManagement({ project, onUpdateProject }: UserManagementProps
   };
 
   const getUnassignedUsers = () => {
-    return availableUsers.filter(user => 
+    return availableShooters.filter(user => 
       !project.assignments.some(assignment => assignment.userId === user.id)
     );
   };
 
   const getUserName = (userId: string) => {
-    return availableUsers.find(user => user.id === userId)?.name || userId;
+    const user = allUsers.find(user => user.id === userId);
+    return user ? user.name : userId;
   };
 
   return (

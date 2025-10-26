@@ -93,13 +93,13 @@ export function AuthComponent({ onLogin, isLoading = false }: AuthComponentProps
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-3 sm:p-4">
+      <div className="w-full max-w-md space-y-4 sm:space-y-6">
         {/* Logo/Header */}
         <div className="text-center space-y-2">
-          <div className="flex items-center justify-center mb-4">
-            <Camera className="h-8 w-8 text-primary mr-2" />
-            <h1 className="text-3xl font-bold text-foreground">SLATE</h1>
+          <div className="flex items-center justify-center mb-3 sm:mb-4">
+            <Camera className="h-7 w-7 sm:h-8 sm:w-8 text-primary mr-2" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">SLATE</h1>
           </div>
           <p className="text-sm text-muted-foreground">
             Shot List Assignment & Tracking Engine
@@ -111,41 +111,41 @@ export function AuthComponent({ onLogin, isLoading = false }: AuthComponentProps
 
         {/* Login Form */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Sign In</CardTitle>
-            <CardDescription>
+          <CardHeader className="pb-4 sm:pb-6">
+            <CardTitle className="text-base sm:text-lg">Sign In</CardTitle>
+            <CardDescription className="text-sm">
               Enter your credentials to access SLATE
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               {/* Email Input */}
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-sm font-medium">Email *</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-3.5 sm:top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="email"
                     value={form.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     placeholder="your.email@hmcstudios.com"
-                    className="pl-10"
+                    className="pl-10 h-11 sm:h-10 touch-manipulation"
                     disabled={isLoading}
                   />
                 </div>
               </div>
 
               {/* Password Input */}
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-sm font-medium">Password *</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-3.5 sm:top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="password"
                     value={form.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
                     placeholder="Enter your password"
-                    className="pl-10"
+                    className="pl-10 h-11 sm:h-10 touch-manipulation"
                     disabled={isLoading}
                   />
                 </div>
@@ -155,9 +155,9 @@ export function AuthComponent({ onLogin, isLoading = false }: AuthComponentProps
               {errors.length > 0 && (
                 <div className="space-y-1 p-3 bg-red-50 border border-red-200 rounded-md">
                   {errors.map((error, index) => (
-                    <div key={index} className="flex items-center gap-2 text-sm text-red-600">
-                      <AlertCircle className="h-4 w-4" />
-                      {error}
+                    <div key={index} className="flex items-center gap-2 text-xs sm:text-sm text-red-600">
+                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                      <span>{error}</span>
                     </div>
                   ))}
                 </div>
@@ -166,7 +166,7 @@ export function AuthComponent({ onLogin, isLoading = false }: AuthComponentProps
               {/* Submit Button */}
               <Button 
                 type="submit" 
-                className="w-full" 
+                className="w-full touch-manipulation min-h-[44px]" 
                 size="lg"
                 disabled={isLoading}
               >
@@ -179,35 +179,38 @@ export function AuthComponent({ onLogin, isLoading = false }: AuthComponentProps
 
         {/* Demo Users */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Demo Access</CardTitle>
-            <CardDescription>
+          <CardHeader className="pb-4 sm:pb-6">
+            <CardTitle className="text-base sm:text-lg">Demo Access</CardTitle>
+            <CardDescription className="text-sm">
               Quick login for testing and demonstration
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {demoUsers.map((user, index) => (
                 <Button
                   key={index}
                   variant="outline"
-                  className="w-full justify-start"
+                  className="w-full justify-start min-h-[56px] sm:min-h-[52px] touch-manipulation p-3 sm:p-4"
                   onClick={() => handleDemoLogin(user)}
                   disabled={isLoading}
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                  <div className="flex items-center justify-between w-full gap-2">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <div className="w-9 h-9 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-xs font-medium text-primary">
                           {user.name.charAt(0)}
                         </span>
                       </div>
-                      <div className="text-left">
-                        <div className="font-medium">{user.name}</div>
-                        <div className="text-xs text-muted-foreground">{user.email}</div>
+                      <div className="text-left min-w-0">
+                        <div className="font-medium text-sm sm:text-base truncate">{user.name}</div>
+                        <div className="text-xs text-muted-foreground truncate">{user.email}</div>
                       </div>
                     </div>
-                    <Badge variant={user.role === 'admin' ? 'must-have' : 'nice-to-have'}>
+                    <Badge 
+                      variant={user.role === 'admin' ? 'must-have' : 'nice-to-have'}
+                      className="flex-shrink-0 text-xs"
+                    >
                       {user.role === 'admin' ? 'Admin' : 'Shooter'}
                     </Badge>
                   </div>
@@ -215,7 +218,7 @@ export function AuthComponent({ onLogin, isLoading = false }: AuthComponentProps
               ))}
             </div>
             
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <div className="mt-3 sm:mt-4 p-2.5 sm:p-3 bg-blue-50 border border-blue-200 rounded-md">
               <p className="text-xs text-blue-700">
                 <strong>Demo Note:</strong> In production, this would connect to a real authentication service like Firebase Auth or Auth0.
               </p>

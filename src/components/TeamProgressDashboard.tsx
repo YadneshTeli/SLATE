@@ -1,10 +1,12 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Users, CheckCircle, Clock, Camera, Video, MapPin } from 'lucide-react';
 import { PageTransition, FadeIn, StaggeredList } from '@/components/animations/PageTransitions';
 import { useApp } from '@/hooks/useApp';
-import type { Project, ShotItem } from '@/types';
+import { userService } from '@/lib/realtimeService';
+import type { Project, ShotItem, User } from '@/types';
 
 interface TeamProgressDashboardProps {
   project: Project;
@@ -22,16 +24,29 @@ interface ShooterProgress {
   completionRate: number;
 }
 
-// Demo users mapping
-const userNames: Record<string, string> = {
-  vittal: 'Vittal',
-  shravan: 'Shravan',
-  rahul: 'Rahul',
-  priya: 'Priya'
-};
-
 export function TeamProgressDashboard({ project }: TeamProgressDashboardProps) {
   const { state } = useApp();
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+
+  // Fetch all users from Firebase
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const users = await userService.getAll();
+        setAllUsers(users);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Get user name from fetched users
+  const getUserName = (userId: string) => {
+    const user = allUsers.find(u => u.id === userId);
+    return user ? user.name : userId;
+  };
 
   // Get all shot items for this project
   const projectShotItems = state.shotItems.filter(item => {
@@ -57,7 +72,7 @@ export function TeamProgressDashboard({ project }: TeamProgressDashboardProps) {
 
     return {
       userId: assignment.userId,
-      userName: userNames[assignment.userId] || assignment.userId,
+      userName: getUserName(assignment.userId),
       zone: assignment.zones?.join(' + ') || assignment.zone || 'Unassigned',
       totalShots,
       completedShots,

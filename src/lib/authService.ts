@@ -52,20 +52,11 @@ export class AuthService {
       }
       
       if (userData) {
-        // Try to update last login time, but don't fail if it errors
-        try {
-          await userService.update(userData.id, { 
-            lastLoginAt: new Date(),
-            updatedAt: new Date()
-          });
-        } catch (updateError) {
-          console.warn('[AuthService] Failed to update last login time:', updateError);
-        }
+        // Note: We skip updating lastLoginAt here to avoid permission issues
+        // The security rules would need to be adjusted to allow users to update their own records
+        // For now, we just return the existing user data
         
-        return {
-          ...userData,
-          lastLoginAt: new Date()
-        };
+        return userData;
       }
       
       // If user doesn't exist in database, create them
@@ -178,16 +169,11 @@ export class AuthService {
       if (existingUser) {
         console.log('[AuthService] Existing user found:', existingUser.email);
         
-        // Update last login time
-        await userService.update(existingUser.id, { 
-          lastLoginAt: new Date(),
-          updatedAt: new Date()
-        });
+        // Note: We skip updating lastLoginAt here to avoid permission issues
+        // The security rules would need to be adjusted to allow users to update their own records
+        // For now, we just return the existing user data
         
-        return {
-          ...existingUser,
-          lastLoginAt: new Date()
-        };
+        return existingUser;
       }
       
       console.log('[AuthService] New user detected, role selection required');
@@ -271,16 +257,11 @@ export class AuthService {
       if (existingUser) {
         console.log('[AuthService] Existing user found:', existingUser.email);
         
-        // Update last login time
-        await userService.update(existingUser.id, { 
-          lastLoginAt: new Date(),
-          updatedAt: new Date()
-        });
+        // Note: We skip updating lastLoginAt here to avoid permission issues
+        // The security rules would need to be adjusted to allow users to update their own records
+        // For now, we just return the existing user data
         
-        return {
-          ...existingUser,
-          lastLoginAt: new Date()
-        };
+        return existingUser;
       }
       
       console.log('[AuthService] New user from redirect, role selection required');

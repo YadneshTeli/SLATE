@@ -1,208 +1,615 @@
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
 # SLATE - Shot List Assignment & Tracking Engine
 
-A modern web-based application for videographers and photographers to track shot completion during live events like concerts and corporate functions.
+A modern, production-ready web application for videographers and photographers to manage and track shot completion during live events like concerts, corporate functions, and weddings. Built with React 19, TypeScript, Firebase, and optimized for mobile-first workflows.
 
-## 🚀 Features
+## 🎯 Overview
 
-### Core Functionality
-- **Shot List Management**: Interactive checklists for tracking photo/video shots
-- **Priority System**: Must-have vs Nice-to-have shot categorization
-- **Progress Tracking**: Real-time completion percentages and statistics
-- **Offline Support**: Works without internet connection with automatic sync
-- **User-Added Shots**: Shooters can add new shots on the fly
+SLATE streamlines the entire production workflow from project creation to shot completion, enabling teams to work efficiently both online and offline. Admins can create detailed shot lists, assign teams to zones, and monitor progress in real-time, while shooters get a focused, distraction-free interface to complete their assignments.
 
-### New Enhanced Features ✨
+## ✨ Core Features
 
-#### 📱 Responsive Design
-- **Mobile-First**: Optimized for one-handed operation on phones
-- **Tablet Support**: Enhanced layout for larger screens
-- **Desktop Layout**: Professional sidebar layout with grid views
-- **Adaptive UI**: Automatically adjusts layout based on screen size
+### 🔐 Authentication & User Management
+- **Firebase Authentication**: Secure email/password and Google Sign-In
+- **Role-Based Access Control**: Admin and Shooter roles with distinct permissions
+- **User Onboarding**: Guided setup for new users with role selection
+- **Profile Management**: Update name, phone number, and profile picture
+- **Password Reset**: Email-based password recovery
+- **Session Persistence**: Auto-login with secure token management
 
-#### 🎯 Enhanced Add Shot Form
-- **Priority Selection**: Choose between Must-Have and Nice-to-Have
-- **Description Field**: Optional detailed instructions for shots
-- **Improved UI**: Better visual feedback and validation
-- **Type Selection**: Visual photo/video type selection with icons
+### 📋 Project Management (Admin)
+- **Full CRUD Operations**: Create, Read, Update, Delete for Projects, Checklists, and Shots
+- **Flexible Project Organization**:
+  - Projects with descriptions and dates
+  - Checklists for categorizing shots (e.g., "Opening Act", "Headliner", "Crowd")
+  - Individual shot items with detailed specifications
+- **Team Assignment**:
+  - Assign multiple shooters per project
+  - Define zones for each shooter (e.g., "Stage", "Pit", "GA", "Sponsor Village")
+  - Real-time shooter availability tracking
+- **Priority System**:
+  - **Must-Have**: Critical shots that cannot be missed
+  - **Nice-to-Have**: Optional shots to capture if time permits
+- **Bulk Operations**: Edit multiple shots and checklists efficiently
+- **Project Filtering**: View all projects or filter by specific project
 
-#### 👥 Authentication System
-- **Secure Login**: Email/password authentication
-- **Demo Access**: Quick login for testing with preset users
-- **Role-Based Access**: Admin vs Shooter permissions
-- **Professional UI**: Clean, branded login experience
+### 📊 Admin Dashboard
+- **Multi-Project Overview**:
+  - Project selector dropdown (view all or specific project)
+  - Aggregate statistics across all projects
+  - Individual project cards with quick stats
+- **Real-Time Metrics**:
+  - Total shots and completion percentages
+  - Must-have vs nice-to-have progress tracking
+  - Active shooter counts
+  - Recent activity feed
+- **Visual Progress Tracking**:
+  - Animated progress bars with GSAP
+  - Color-coded priority indicators
+  - Completion rate badges
+- **Team Performance Dashboard**:
+  - Individual shooter progress by zone
+  - Shot type breakdown (photo vs video)
+  - Completion timelines
 
-#### 📊 Admin Dashboard
-- **Project Overview**: Comprehensive project statistics
-- **Team Performance**: Individual shooter progress tracking
-- **Recent Activity**: Live feed of completed shots
-- **Visual Analytics**: Progress bars and completion metrics
+### 🎥 Shooter Interface
+- **Focused Workflow**:
+  - Clean, distraction-free checklist view
+  - Large, touch-optimized buttons (44px minimum - WCAG AAA compliant)
+  - Priority-based visual indicators
+- **Shot Completion**:
+  - One-tap completion toggle
+  - Automatic timestamp recording
+  - Visual feedback with animations
+- **Add Custom Shots**:
+  - Create new shots on the fly
+  - Set priority and description
+  - Choose photo or video type
+- **Persistent Header**:
+  - Always-visible project name
+  - Assigned zone display
+  - Real-time progress counter (e.g., "16/25 Completed")
+- **Last Viewed Project**: Automatically opens last worked-on project
 
-#### ⚙️ Project Management (Admin)
-- **Checklist Creation**: Organize shots into categories
-- **Shot Management**: Add, edit, and delete individual shots
-- **Team Assignment**: Assign shooters to specific zones
-- **Real-time Monitoring**: Track team progress across projects
+### 📱 Mobile-First Responsive Design
+- **Adaptive Layouts**:
+  - **Mobile** (< 640px): Single column, stacked elements
+  - **Tablet** (640-1024px): Optimized grid layouts
+  - **Desktop** (> 1024px): Sidebar navigation with expanded views
+- **Touch Optimizations**:
+  - 44px minimum tap targets (WCAG AAA)
+  - `touch-manipulation` CSS for fast touch response
+  - Swipe-friendly card interfaces
+- **Responsive Typography**:
+  - Scales from `text-xs` to `text-base` across breakpoints
+  - Truncation and line-clamping for overflow content
+- **Flexible Components**:
+  - `flex-col sm:flex-row` stacking patterns
+  - `w-full sm:w-auto` adaptive widths
+  - Responsive spacing with Tailwind's `sm:` and `md:` variants
+
+### 🔄 Offline Support & PWA
+- **Progressive Web App**:
+  - Installable on mobile devices and desktop
+  - Service Worker for asset caching
+  - Background sync when connection restored
+- **IndexedDB Storage**:
+  - Persistent offline data storage
+  - Automatic sync queue management
+  - Conflict resolution strategies
+- **Offline-First Architecture**:
+  - Continue working without internet
+  - Local-first state updates
+  - Automatic Firebase sync when online
+- **Connection Status**:
+  - Visual offline indicator
+  - Connection state monitoring
+  - Graceful degradation
+
+### 🔥 Firebase Integration
+- **Realtime Database**:
+  - Live data synchronization
+  - Real-time collaboration
+  - Optimistic UI updates
+- **Firebase Authentication**:
+  - Email/password authentication
+  - Google OAuth integration
+  - Secure session management
+- **Security Rules**:
+  - Role-based data access
+  - User-specific data permissions
+  - Protected admin operations
+- **Database Structure**:
+  ```
+  /users/{userId}
+  /projects/{projectId}
+  /checklists/{checklistId}
+  /shotItems/{shotItemId}
+  /projectProgress/{projectId}
+  ```
+
+### 🎨 Modern UI/UX
+- **shadcn/ui Components**: High-quality, accessible component library
+- **Tailwind CSS**: Utility-first styling with custom design system
+- **GSAP Animations**:
+  - Page transitions
+  - Progress bar animations
+  - Staggered list reveals
+  - Smooth micro-interactions
+- **Lucide Icons**: Consistent, scalable icon system
+- **Dark Mode Ready**: Color scheme prepared for dark theme
+- **Loading States**: Skeleton screens and spinners for async operations
 
 ## 🛠 Tech Stack
 
-- **Frontend**: React 19.1.0 + TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui components
-- **State Management**: React Context + useReducer
-- **Build Tool**: Vite
-- **Icons**: Lucide React
-- **Offline Support**: localStorage + PWA-ready architecture
+### Frontend
+- **React 19.1.0**: Latest React with concurrent features
+- **TypeScript 5.8**: Type-safe development
+- **Vite 7.0**: Lightning-fast build tool and dev server
+- **React Router DOM 7.7**: Client-side routing with data loading
+- **Tailwind CSS 3.4**: Utility-first CSS framework
+- **shadcn/ui**: Radix UI-based component system
 
-## 📱 Responsive Breakpoints
+### Backend & Services
+- **Firebase 12.0**:
+  - Realtime Database for data storage
+  - Authentication for user management
+  - Hosting for deployment
+- **IndexedDB**: Browser-based offline storage
 
-- **Mobile**: < 1024px (single column, mobile-optimized)
-- **Tablet/Desktop**: ≥ 1024px (sidebar + main content layout)
-- **Large Desktop**: ≥ 1280px (expanded grid layouts)
+### Animation & Interaction
+- **GSAP 3.13**: Professional-grade animation library
+- **Lucide React 0.536**: Modern icon library
 
-## 🎭 Demo Users
-
-The application includes demo authentication for testing:
-
-### Admin User
-- **Name**: Siddhant
-- **Email**: siddhant@hmcstudios.com
-- **Role**: Project Manager
-- **Access**: Full project management capabilities
-
-### Shooter Users
-- **Name**: Vittal
-- **Email**: vittal@hmcstudios.com
-- **Role**: Videographer
-- **Zone**: Stage + Pit
-
-- **Name**: Shravan
-- **Email**: shravan@hmcstudios.com
-- **Role**: Photographer
-- **Zone**: GA + Sponsor Village
-
-## 🚀 Getting Started
-
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
-
-2. **Start Development Server**
-   ```bash
-   npm run dev
-   ```
-
-3. **Open Application**
-   Navigate to `http://localhost:5175` (or the shown port)
-
-4. **Login**
-   Use the demo credentials or create a new account
+### Development Tools
+- **ESLint 9.30**: Code quality and consistency
+- **TypeScript ESLint 8.35**: TypeScript-specific linting
+- **PostCSS & Autoprefixer**: CSS processing
 
 ## 📁 Project Structure
 
 ```
-src/
-├── components/
-│   ├── ui/                 # shadcn/ui components
-│   ├── AddShotForm.tsx     # Enhanced shot creation form
-│   ├── AuthComponent.tsx   # Authentication interface
-│   ├── ProjectDashboard.tsx # Admin dashboard
-│   └── ProjectManagement.tsx # Admin project tools
-├── contexts/
-│   └── AppContext.tsx      # Global state management
-├── hooks/
-│   └── useApp.ts          # App context hook
-├── types/
-│   └── index.ts           # TypeScript interfaces
-├── utils/
-│   └── index.ts           # Utility functions
-├── App.tsx                # Main application component
-└── main.tsx              # Application entry point
+SLATE/
+├── src/
+│   ├── components/          # React components
+│   │   ├── ui/             # shadcn/ui primitives
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── select.tsx
+│   │   │   ├── checkbox.tsx
+│   │   │   ├── progress.tsx
+│   │   │   └── ...
+│   │   ├── animations/     # GSAP animation components
+│   │   │   └── PageTransitions.tsx
+│   │   ├── AddShotForm.tsx          # Enhanced shot creation form
+│   │   ├── AnimatedShotItem.tsx     # Shot list item with animations
+│   │   ├── AppRouter.tsx            # Application routing
+│   │   ├── AuthComponent.tsx        # Demo authentication (legacy)
+│   │   ├── AuthForm.tsx             # Firebase auth form
+│   │   ├── EnhancedAdminDashboard.tsx  # Multi-project dashboard
+│   │   ├── OfflineIndicator.tsx     # Network status indicator
+│   │   ├── PersistentHeader.tsx     # Sticky project header
+│   │   ├── ProjectCreationDashboard.tsx  # Project CRUD interface
+│   │   ├── ProjectDashboard.tsx     # Shooter's project view
+│   │   ├── ProjectManagement.tsx    # Admin project tools
+│   │   ├── ProtectedRoute.tsx       # Route authorization
+│   │   ├── RoleSelection.tsx        # Google sign-in role picker
+│   │   ├── TeamProgressDashboard.tsx  # Team analytics
+│   │   ├── UserManagement.tsx       # Admin user controls
+│   │   ├── UserOnboarding.tsx       # New user onboarding flow
+│   │   └── UserProfile.tsx          # User profile management
+│   ├── contexts/
+│   │   ├── AppContext.tsx           # Global app state
+│   │   └── AuthContext.tsx          # Authentication state
+│   ├── hooks/
+│   │   ├── useApp.ts                # App context hook
+│   │   └── usePWA.ts                # PWA installation hook
+│   ├── lib/
+│   │   ├── firebase.ts              # Firebase configuration
+│   │   ├── authService.ts           # Authentication service
+│   │   ├── realtimeService.ts       # Database operations
+│   │   └── syncService.ts           # Offline sync logic
+│   ├── pages/
+│   │   ├── AdminDashboardPage.tsx   # Admin dashboard page
+│   │   ├── AdminProjectsPage.tsx    # Admin projects list
+│   │   ├── AuthPage.tsx             # Login/signup page
+│   │   ├── ChecklistPage.tsx        # Individual checklist view
+│   │   ├── DashboardPage.tsx        # Main dashboard router
+│   │   ├── ProjectDetailPage.tsx    # Project details
+│   │   ├── ProjectManagementPage.tsx  # Project management
+│   │   ├── ProjectsPage.tsx         # Projects list
+│   │   └── ShooterProjectPage.tsx   # Shooter's project view
+│   ├── types/
+│   │   └── index.ts                 # TypeScript interfaces
+│   ├── utils/
+│   │   ├── demoData.ts              # Demo data generator
+│   │   ├── index.ts                 # Utility functions
+│   │   └── offlineDataManager.ts    # IndexedDB manager
+│   ├── App.tsx                      # Root component
+│   ├── main.tsx                     # Application entry
+│   └── index.css                    # Global styles
+├── public/
+│   ├── manifest.json                # PWA manifest
+│   ├── sw.js                        # Service worker
+│   └── vite.svg                     # App icon
+├── database.rules.json              # Firebase security rules
+├── firebase.json                    # Firebase configuration
+├── .firebaserc                      # Firebase project settings
+├── tailwind.config.js               # Tailwind configuration
+├── tsconfig.json                    # TypeScript config
+├── vite.config.ts                   # Vite configuration
+└── package.json                     # Dependencies
 ```
 
-## 🎯 User Experience
+## 🚀 Getting Started
+
+### Prerequisites
+- **Node.js** 18.0 or higher
+- **npm** 9.0 or higher
+- **Firebase Account** (for production deployment)
+
+### Installation
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/YadneshTeli/SLATE.git
+   cd SLATE
+   ```
+
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Firebase Setup** (for production)
+   
+   Create a `.env.local` file in the root directory:
+   ```env
+   VITE_FIREBASE_API_KEY=your_api_key
+   VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+   VITE_FIREBASE_DATABASE_URL=https://your_project.firebaseio.com
+   VITE_FIREBASE_PROJECT_ID=your_project_id
+   VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   VITE_FIREBASE_APP_ID=your_app_id
+   ```
+
+4. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
+   App will open at `http://localhost:5173`
+
+5. **Build for Production**
+   ```bash
+   npm run build
+   ```
+
+### Firebase Configuration
+
+1. **Install Firebase CLI**
+   ```bash
+   npm install -g firebase-tools
+   ```
+
+2. **Login to Firebase**
+   ```bash
+   firebase login
+   ```
+
+3. **Initialize Project** (if not already done)
+   ```bash
+   firebase init
+   ```
+   Select:
+   - Realtime Database
+   - Hosting
+   - Authentication
+
+4. **Deploy Database Rules**
+   ```bash
+   npm run firebase:deploy:rules
+   ```
+
+5. **Deploy to Firebase Hosting**
+   ```bash
+   npm run firebase:deploy
+   ```
+
+### Adding to Authorized Domains
+
+After deployment, add your domain to Firebase:
+1. Go to [Firebase Console](https://console.firebase.google.com)
+2. Select your project
+3. Navigate to **Authentication** → **Settings** → **Authorized domains**
+4. Add your deployment URL (e.g., `slate-pwa.netlify.app` or `your-app.web.app`)
+
+## 👥 User Roles & Permissions
+
+### Admin
+**Capabilities:**
+- ✅ Create, edit, and delete projects
+- ✅ Create, edit, and delete checklists
+- ✅ Create, edit, and delete shots
+- ✅ Assign shooters to projects with zones
+- ✅ View team progress and analytics
+- ✅ Manage user roles (promote/demote)
+- ✅ Access admin dashboard and all projects
+- ✅ Real-time monitoring of all shooters
+
+**Use Cases:**
+- Project Managers
+- Production Coordinators
+- Creative Directors
+
+### Shooter
+**Capabilities:**
+- ✅ View assigned projects and zones
+- ✅ Mark shots as complete/incomplete
+- ✅ Add new shots to own checklist (user-added shots)
+- ✅ View personal progress and stats
+- ✅ Work offline with automatic sync
+- ❌ Cannot edit or delete admin-created shots
+- ❌ Cannot access other shooters' projects
+- ❌ Cannot modify project settings
+
+**Use Cases:**
+- Videographers
+- Photographers
+- Camera Operators
+- Content Creators
+
+## 📱 Mobile Usage Guide
 
 ### For Shooters
-1. **Quick Access**: Login once, auto-navigate to active project
-2. **Visual Priority**: Clear must-have vs nice-to-have indicators
-3. **Fast Completion**: One-tap shot completion tracking
-4. **Add Opportunities**: Capture unexpected shots on the fly
-5. **Offline Ready**: Works without internet, syncs when connected
+
+1. **First Time Setup**
+   - Sign in with email or Google
+   - Select "Shooter" role during onboarding
+   - Complete profile with phone number
+
+2. **Daily Workflow**
+   - App automatically opens last viewed project
+   - See assigned zone in persistent header
+   - Progress counter shows "16/25 Completed"
+   - Tap shots to mark complete (must-have shots highlighted in red)
+   - Add custom shots with + button
+
+3. **Offline Mode**
+   - Continue working without internet
+   - Offline indicator shows connection status
+   - Changes sync automatically when online
+
+4. **Installing as App** (PWA)
+   - iOS: Safari → Share → "Add to Home Screen"
+   - Android: Chrome → Menu → "Install App"
 
 ### For Admins
-1. **Project Setup**: Create detailed shot lists and assignments
-2. **Team Monitoring**: Real-time progress across all shooters
-3. **Flexible Management**: Edit shots and checklists on the fly
-4. **Performance Analytics**: Track team efficiency and completion rates
-5. **Zone Management**: Assign specific areas to team members
 
-## 🔄 Data Flow
+1. **Project Creation**
+   - Create project with name, description, date
+   - Add checklists (e.g., "Opening", "Main Set", "Encore")
+   - Add shots to each checklist with priorities
+   - Assign shooters and define their zones
 
-1. **Admin** creates project and assigns shooters to zones
-2. **Admin** creates checklists and populates with required shots
-3. **Shooters** access their assigned shot lists on mobile devices
-4. **Real-time sync** keeps everyone updated on progress
-5. **Offline support** ensures reliability in poor network conditions
+2. **Team Monitoring**
+   - Dashboard shows all projects or filter specific project
+   - View aggregate stats across all projects
+   - Click project cards to see detailed progress
+   - Recent activity feed shows latest completions
 
-## 🎨 Design System
+3. **Real-Time Collaboration**
+   - See shooter progress update live
+   - Filter by project to focus on specific event
+   - Edit shots and checklists on the fly
 
-- **Colors**: Professional blue/gray palette with priority indicators
-- **Typography**: Clean, readable fonts optimized for mobile
-- **Icons**: Consistent Lucide React icon set
-- **Spacing**: Tailwind's systematic spacing scale
-- **Components**: Reusable shadcn/ui component library
+## 🎯 Key Workflows
 
-## 🚀 Future Enhancements
+### Creating a New Project
 
-- **Real-time Database**: Firebase/Firestore integration
-- **Push Notifications**: Shot assignment and completion alerts
-- **Image Upload**: Reference photos for shot requirements
-- **Advanced Analytics**: Detailed performance metrics
-- **Multi-language**: International team support
-- **PWA Features**: Install as native app
-- **Camera Integration**: Direct capture from within app
+```
+Admin Dashboard → Projects Tab → Create Project
+→ Enter project details
+→ Create checklists
+→ Add shots to each checklist
+→ Assign shooters with zones
+→ Save Project
+```
+
+### Completing Shots (Shooter)
+
+```
+Login → Auto-open last project
+→ View checklist organized by priority
+→ Tap shot to mark complete
+→ Add custom shots if needed
+→ Progress updates in header
+```
+
+### Monitoring Team Progress
+
+```
+Admin Dashboard → Select "All Projects" or specific project
+→ View aggregate metrics
+→ Click project card for details
+→ See individual shooter progress
+→ Check recent activity feed
+```
+
+## 🔒 Security Features
+
+- **Firebase Security Rules**: Role-based access control
+- **Authentication Required**: All routes protected
+- **HTTPS Only**: Secure data transmission
+- **XSS Protection**: Input sanitization
+- **CSRF Protection**: Token-based requests
+- **Data Validation**: Client and server-side validation
+
+## 🌐 Browser Support
+
+- **Chrome/Edge** 90+
+- **Firefox** 88+
+- **Safari** 14+
+- **Mobile Safari** 14+
+- **Chrome Android** 90+
+
+## 🚀 Performance Optimizations
+
+- **Code Splitting**: Lazy-loaded routes and components
+- **Tree Shaking**: Removes unused code
+- **Asset Optimization**: Minified JS/CSS, compressed images
+- **Service Worker Caching**: Instant load for repeat visits
+- **Optimistic UI**: Immediate feedback before server confirmation
+- **Virtual Scrolling**: Efficient rendering of large lists
+
+## 🧪 Testing Accounts
+
+### Demo Admin
+- **Email**: admin@hmcstudios.com
+- **Password**: admin123
+- **Role**: Admin (Project Manager)
+- **Access**: Full CRUD operations, team management
+
+### Demo Shooter
+- **Email**: shooter@hmcstudios.com
+- **Password**: shooter123
+- **Role**: Shooter (Videographer)
+- **Access**: Assigned projects, shot completion
+
+*Note: Demo accounts use Firebase Authentication in production*
+
+## 📊 Data Model
+
+### User
+```typescript
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'shooter';
+  phoneNumber?: string;
+  profilePicture?: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  lastLoginAt: Date;
+}
+```
+
+### Project
+```typescript
+interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  date?: Date;
+  status: 'draft' | 'active' | 'completed' | 'archived';
+  createdBy: string;  // User ID
+  assignments: ProjectAssignment[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface ProjectAssignment {
+  userId: string;
+  zone?: string;  // e.g., "Stage", "Pit", "GA"
+  assignedAt: Date;
+}
+```
+
+### Checklist
+```typescript
+interface Checklist {
+  id: string;
+  projectId: string;
+  name: string;
+  description: string;
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### ShotItem
+```typescript
+interface ShotItem {
+  id: string;
+  checklistId: string;
+  title: string;
+  description?: string;
+  type: 'photo' | 'video';
+  priority: 'must-have' | 'nice-to-have';
+  isCompleted: boolean;
+  isUserAdded: boolean;  // Created by shooter
+  createdBy: string;  // User ID
+  completedBy?: string;  // User ID
+  completedAt?: Date;
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+## 🛣 Roadmap
+
+### v1.1 (Current - Completed ✅)
+- ✅ Firebase Realtime Database integration
+- ✅ Google Sign-In authentication
+- ✅ Multi-project filtering in admin dashboard
+- ✅ Full CRUD for projects, checklists, and shots
+- ✅ Mobile-first responsive design
+- ✅ Offline support with IndexedDB
+- ✅ PWA with service worker
+
+### v1.2 (Planned)
+- 📸 Camera integration for direct capture
+- 🖼 Image upload and reference photos
+- 🔔 Push notifications for assignments
+- 📧 Email notifications for project updates
+- 📱 Native mobile apps (React Native)
+
+### v2.0 (Future)
+- 🌍 Multi-language support (i18n)
+- 📊 Advanced analytics and reporting
+- 📤 Export data to CSV/PDF
+- 🎨 Dark mode
+- 🔗 Integration with Dropbox/Google Drive
+- 👥 Team chat and collaboration
+- 📅 Calendar integration
+- 🎥 Video player integration
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-© 2025 HMC Studios. All rights reserved.
+MIT License - see [LICENSE](LICENSE) file for details.
+
+Copyright © 2025 Yadnesh Teli
+
+## 🙏 Acknowledgments
+
+- **shadcn/ui** for the beautiful component library
+- **Firebase** for backend infrastructure
+- **Tailwind CSS** for the styling framework
+- **GSAP** for professional animations
+- **Lucide** for the icon system
+- **Vite** for the blazing-fast build tool
+
+## 📞 Support
+
+For issues, questions, or feature requests:
+- **GitHub Issues**: [Create an issue](https://github.com/YadneshTeli/SLATE/issues)
+- **Email**: support@hmcstudios.com
+- **Documentation**: [Full docs](#) (coming soon)
 
 ---
 
-Built with ❤️ for professional videographers and photographers.
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+**Built with ❤️ by Yadnesh Teli (Taskuick Solutions) for HMC Studios and professional videographers worldwide.**

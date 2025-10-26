@@ -455,4 +455,4 @@ Your contributions make SLATE better for photographers and videographers worldwi
 
 **Happy Contributing! 🎉**
 
-Built with ❤️ by the SLATE community
+Built with ❤️ by Yadnesh Teli (Taskuick Solutions) for HMC Studios and professional videographers worldwide.

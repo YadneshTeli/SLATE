@@ -602,7 +602,7 @@ For more details, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
-Copyright © 2025 Yadnesh Teli
+Copyright © 2025 Yadnesh Teli (Taskuick Solutions)
 
 ## 🙏 Acknowledgments
 

@@ -73,7 +73,7 @@ export function ProjectDashboard({ project, users, shotItems, onManageProject }:
             <div>
               <CardTitle className="text-xl">{project.name}</CardTitle>
               <CardDescription>
-                {project.description} • {formatDate(project.date)}
+                {project.description}{project.date && ` • ${formatDate(project.date)}`}
               </CardDescription>
             </div>
             {onManageProject && (

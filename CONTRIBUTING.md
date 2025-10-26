@@ -368,6 +368,7 @@ We welcome feature suggestions! Please:
 
 When creating a feature request, please include:
 
+```markdown
 **Problem Statement**
 - Describe the problem or limitation you're experiencing
 - Explain why this is important to solve
@@ -390,6 +391,7 @@ When creating a feature request, please include:
 - Mockups, wireframes, or screenshots
 - Examples from other applications
 - Any relevant research or references
+```
 
 ## 🛠 Development Setup
 

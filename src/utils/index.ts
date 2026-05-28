@@ -39,21 +39,36 @@ export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
+type DateInput = Date | string | number | null | undefined;
+
+function toValidDate(value: DateInput): Date | null {
+  if (!value) return null;
+
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 // Format timestamps for display
-export function formatTimestamp(date: Date): string {
+export function formatTimestamp(date: DateInput): string {
+  const validDate = toValidDate(date);
+  if (!validDate) return 'Unknown';
+
   return new Intl.DateTimeFormat('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
-  }).format(date);
+  }).format(validDate);
 }
 
-export function formatDate(date: Date): string {
+export function formatDate(date: DateInput): string {
+  const validDate = toValidDate(date);
+  if (!validDate) return 'No date set';
+
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
-  }).format(date);
+  }).format(validDate);
 }
 
 // Check if we have internet connectivity

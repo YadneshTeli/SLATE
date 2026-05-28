@@ -7,8 +7,7 @@ const STATIC_CACHE_NAME = 'slate-static-v2';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/manifest.json',
-  '/favicon.ico'
+  '/manifest.json'
 ];
 
 // Static assets patterns to cache

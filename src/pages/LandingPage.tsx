@@ -78,7 +78,7 @@ export function LandingPage() {
 
           <div className="grid flex-1 items-center gap-10 py-10 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12 lg:py-14">
             <div className="max-w-2xl">
-              <Badge className="mb-5 border border-teal-200 bg-white/80 text-teal-900 shadow-sm hover:bg-white">
+              <Badge className="mb-5 border border-teal-200 bg-white/80 text-teal-900 shadow-sm hover:bg-white dark:border-teal-700/60 dark:bg-teal-300/15 dark:text-teal-100 dark:hover:bg-teal-300/20">
                 Production management for HMC Studios
               </Badge>
               <h1 className="text-balance text-4xl font-bold leading-tight tracking-normal text-slate-950 dark:text-white sm:text-5xl lg:text-6xl">
@@ -95,7 +95,7 @@ export function LandingPage() {
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
-              <Button asChild size="lg" variant="outline" className="border-teal-200 bg-white/80 text-teal-900 hover:bg-teal-50 dark:border-slate-700 dark:bg-slate-900/80 dark:text-teal-200 dark:hover:bg-slate-800">
+                <Button asChild size="lg" variant="outline" className="border-teal-200 bg-white/80 text-teal-900 hover:bg-teal-50 dark:border-slate-700 dark:bg-slate-900/80 dark:text-teal-200 dark:hover:bg-slate-800">
                   <a href="#workflow">See workflow</a>
                 </Button>
               </div>
@@ -198,7 +198,7 @@ export function LandingPage() {
 
         <div className="mt-8 grid gap-4 rounded-lg border border-teal-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:grid-cols-[1fr_auto] md:items-center md:p-6">
           <div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-teal-800">
+            <div className="flex items-center gap-2 text-sm font-semibold text-teal-800 dark:text-teal-200">
               <ShieldCheck className="h-4 w-4" />
               Built for production days
             </div>

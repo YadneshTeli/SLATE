@@ -1,6 +1,7 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { AuthForm } from '@/components/AuthForm';
+import { LandingPage } from '@/pages/LandingPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ProjectsPage } from '@/pages/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
@@ -48,8 +49,19 @@ function AuthPage() {
   
   console.log('🔷 [AuthPage] Showing auth form');
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <AuthForm />
+    <div className="min-h-screen bg-[linear-gradient(135deg,#f0fdfa_0%,#ffffff_48%,#fff7ed_100%)] px-4 py-6 sm:px-6">
+      <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl flex-col items-center justify-center gap-6 lg:grid lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="hidden max-w-lg lg:block">
+          <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-md bg-teal-700 text-white shadow-sm">
+            <span className="text-lg font-bold">S</span>
+          </div>
+          <h1 className="text-4xl font-bold leading-tight text-slate-950">Sign in and get the shoot back in sync.</h1>
+          <p className="mt-4 text-base leading-7 text-slate-700">
+            Access project dashboards, shooter checklists, offline updates, and team progress from one responsive workspace.
+          </p>
+        </div>
+        <AuthForm />
+      </div>
     </div>
   );
 }
@@ -61,6 +73,7 @@ export function AppRouter() {
     <BrowserRouter>
       <RouteLogger />
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route
           path="/dashboard"
@@ -126,7 +139,6 @@ export function AppRouter() {
             </ProtectedRoute>
           }
         />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );

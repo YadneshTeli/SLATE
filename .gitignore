@@ -52,3 +52,5 @@ test-*
 *-backup*
 *-old*
 *-new*
+*prompts/
+.codex

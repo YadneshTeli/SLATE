@@ -78,13 +78,13 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
 
   if (resetMode && resetSent) {
     return (
-      <Card className="w-full max-w-md mx-auto p-6">
+      <Card className="w-full max-w-md mx-auto p-6 dark:border-slate-800">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
             <Mail className="w-8 h-8 text-green-600" />
           </div>
           <h2 className="text-xl font-semibold">Check Your Email</h2>
-          <p className="text-gray-600">
+          <p className="text-slate-600 dark:text-slate-300">
             We've sent a password reset link to <strong>{resetEmail}</strong>
           </p>
           <Button 
@@ -104,17 +104,17 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto p-6">
+    <Card className="w-full max-w-md mx-auto p-4 shadow-xl shadow-slate-900/5 dark:border-slate-800 dark:shadow-black/20 sm:p-6">
       <div className="space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-            <User className="w-8 h-8 text-blue-600" />
+          <div className="w-16 h-16 bg-teal-100 rounded-md flex items-center justify-center mx-auto dark:bg-teal-900/40">
+            <User className="w-8 h-8 text-teal-700 dark:text-teal-300" />
           </div>
           <h1 className="text-2xl font-bold">
             {resetMode ? 'Reset Password' : isSignUp ? 'Create Account' : 'Welcome Back'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-slate-600 dark:text-slate-300">
             {resetMode 
               ? 'Enter your email to receive a reset link'
               : isSignUp 
@@ -126,8 +126,8 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
 
         {/* Error Display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-            <p className="text-red-700 text-sm">{error}</p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 dark:border-red-900/60 dark:bg-red-950/40">
+            <p className="text-red-700 text-sm dark:text-red-200">{error}</p>
           </div>
         )}
 
@@ -165,10 +165,10 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         {!resetMode && (
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+              <div className="w-full border-t border-slate-300 dark:border-slate-700" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">or</span>
+              <span className="px-2 bg-white text-slate-500 dark:bg-card dark:text-slate-400">or</span>
             </div>
           </div>
         )}
@@ -179,7 +179,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
                 id="email"
                 type="email"
@@ -197,7 +197,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -211,7 +211,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -225,7 +225,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <Input
                     id="name"
                     type="text"
@@ -241,7 +241,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="phoneNumber">Phone Number (Optional)</Label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <Input
                     id="phoneNumber"
                     type="tel"
@@ -259,13 +259,13 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                   id="role"
                   value={role}
                   onChange={(e) => setRole(e.target.value as 'admin' | 'shooter')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   required
                 >
                   <option value="shooter">Shooter (Videographer/Photographer)</option>
                   <option value="admin">Admin (Project Manager)</option>
                 </select>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {role === 'admin' 
                     ? 'Can create projects and manage teams'
                     : 'Can complete shots and add new items to assigned projects'
@@ -300,14 +300,14 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         {/* Footer Links */}
         <div className="text-center space-y-2">
           {!resetMode && (
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
               {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
               <button
                 onClick={() => {
                   setIsSignUp(!isSignUp);
                   resetForm();
                 }}
-                className="text-blue-600 hover:text-blue-700 font-medium"
+                className="font-medium text-teal-700 hover:text-teal-800 dark:text-teal-300 dark:hover:text-teal-200"
               >
                 {isSignUp ? 'Sign In' : 'Sign Up'}
               </button>
@@ -321,7 +321,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                   setResetMode(true);
                   clearError();
                 }}
-                className="text-blue-600 hover:text-blue-700"
+                className="text-teal-700 hover:text-teal-800 dark:text-teal-300 dark:hover:text-teal-200"
               >
                 Forgot your password?
               </button>
@@ -336,7 +336,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                   setResetEmail('');
                   clearError();
                 }}
-                className="text-blue-600 hover:text-blue-700"
+                className="text-teal-700 hover:text-teal-800 dark:text-teal-300 dark:hover:text-teal-200"
               >
                 Back to Sign In
               </button>
@@ -345,13 +345,13 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         </div>
 
         {/* Demo Accounts Info */}
-        <div className="border-t pt-4">
-          <p className="text-xs text-gray-500 text-center mb-2">Demo Accounts (for testing):</p>
+        <div className="border-t border-slate-200 pt-4 dark:border-slate-800">
+          <p className="text-xs text-slate-500 text-center mb-2 dark:text-slate-400">Demo Accounts (for testing):</p>
           <div className="flex gap-2 justify-center">
             <Badge variant="outline" className="text-xs">admin@slate-demo.com</Badge>
             <Badge variant="outline" className="text-xs">shooter@slate-demo.com</Badge>
           </div>
-          <p className="text-xs text-gray-400 text-center mt-1">Password: demo123</p>
+          <p className="text-xs text-slate-400 text-center mt-1">Password: demo123</p>
         </div>
       </div>
     </Card>

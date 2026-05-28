@@ -60,9 +60,9 @@ function DashboardStats({ projects, shotItems, checklists }: DashboardStatsProps
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-slate-600 truncate">{stat.title}</p>
-                <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{stat.value}</p>
-                <p className="text-[10px] sm:text-xs text-slate-500 mt-1 truncate">
+                <p className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 truncate">{stat.title}</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-1">{stat.value}</p>
+                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
                   {stat.subtitle}
                 </p>
               </div>
@@ -101,15 +101,15 @@ function RecentActivity({ shotItems }: RecentActivityProps) {
           <div className="space-y-3 sm:space-y-4">
             {recentItems.map((item, index) => (
               <FadeIn key={`${item.id}-${item.completedAt}-${index}`} delay={0.1 * index}>
-                <div className="flex items-center space-x-3 sm:space-x-4 p-2 sm:p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors touch-manipulation">
+                <div className="flex items-center space-x-3 sm:space-x-4 p-2 sm:p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors touch-manipulation dark:bg-slate-900 dark:hover:bg-slate-800">
                   <div className={`p-1.5 sm:p-2 rounded-full flex-shrink-0 ${
                     item.type === 'photo' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
                   }`}>
                     {item.type === 'photo' ? <Camera className="w-3 h-3 sm:w-4 sm:h-4" /> : <Video className="w-3 h-3 sm:w-4 sm:h-4" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm sm:text-base text-slate-900 truncate">{item.title}</p>
-                    <p className="text-xs sm:text-sm text-slate-600 truncate">
+                    <p className="font-medium text-sm sm:text-base text-slate-900 dark:text-white truncate">{item.title}</p>
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 truncate">
                       Completed {item.completedAt ? new Date(item.completedAt).toLocaleString() : 'Unknown'}
                     </p>
                   </div>
@@ -123,7 +123,7 @@ function RecentActivity({ shotItems }: RecentActivityProps) {
               </FadeIn>
             ))}
             {recentItems.length === 0 && (
-              <p className="text-center text-xs sm:text-sm text-slate-500 py-6 sm:py-8">No completed shots yet</p>
+              <p className="text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 py-6 sm:py-8">No completed shots yet</p>
             )}
           </div>
         </CardContent>
@@ -164,10 +164,10 @@ function ProgressOverview({ project, shotItems }: ProgressOverviewProps) {
         <CardContent>
           <div ref={progressRef} className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-slate-700">Overall Progress</span>
-              <span className="text-sm font-bold text-slate-900">{Math.round(completionRate)}%</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Overall Progress</span>
+              <span className="text-sm font-bold text-slate-900 dark:text-white">{Math.round(completionRate)}%</span>
             </div>
-            <div className="relative w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+            <div className="relative w-full bg-slate-200 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
               <div 
                 className="progress-fill absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-green-500 rounded-full transition-all duration-300"
                 style={{ width: '0%' }}
@@ -176,11 +176,11 @@ function ProgressOverview({ project, shotItems }: ProgressOverviewProps) {
             <div className="grid grid-cols-2 gap-4 mt-6">
               <div className="text-center">
                 <p className="text-2xl font-bold text-green-600">{completedShots}</p>
-                <p className="text-sm text-slate-600">Completed</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Completed</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-slate-600">{totalShots - completedShots}</p>
-                <p className="text-sm text-slate-600">Remaining</p>
+                <p className="text-2xl font-bold text-slate-600 dark:text-slate-300">{totalShots - completedShots}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Remaining</p>
               </div>
             </div>
           </div>
@@ -199,8 +199,8 @@ export function EnhancedAdminDashboard() {
       <PageTransition className="text-center py-12">
         <ScaleIn>
           <div>
-            <h3 className="text-base sm:text-lg font-medium text-slate-900 mb-2">No Projects</h3>
-            <p className="text-sm sm:text-base text-slate-600">Create your first project to get started!</p>
+            <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-2">No Projects</h3>
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300">Create your first project to get started!</p>
           </div>
         </ScaleIn>
       </PageTransition>
@@ -226,10 +226,10 @@ export function EnhancedAdminDashboard() {
     <PageTransition className="space-y-4 sm:space-y-6">
       {/* Project Filter */}
       <FadeIn>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 bg-white p-3 sm:p-4 rounded-lg border border-slate-200 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 bg-white p-3 sm:p-4 rounded-lg border border-slate-200 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex-1 min-w-0">
-            <h2 className="text-base sm:text-lg font-semibold text-slate-900 truncate">Dashboard Overview</h2>
-            <p className="text-xs sm:text-sm text-slate-600 truncate">
+            <h2 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white truncate">Dashboard Overview</h2>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 truncate">
               {selectedProjectId === 'all' 
                 ? `Showing all ${state.projects.length} projects` 
                 : `Viewing: ${filteredProjects[0]?.name || 'Unknown'}`}
@@ -289,7 +289,7 @@ export function EnhancedAdminDashboard() {
 
             return (
               <FadeIn key={project.id} delay={0.1 * index}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer touch-manipulation" onClick={() => setSelectedProjectId(project.id)}>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer touch-manipulation dark:hover:border-slate-700" onClick={() => setSelectedProjectId(project.id)}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
@@ -305,31 +305,31 @@ export function EnhancedAdminDashboard() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex items-center justify-between text-xs sm:text-sm">
-                      <span className="text-slate-600">Progress</span>
+                        <span className="text-slate-600 dark:text-slate-300">Progress</span>
                       <span className="font-semibold">{completionRate}%</span>
                     </div>
-                    <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2">
                       <div 
                         className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${completionRate}%` }}
                       />
                     </div>
-                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                       <div className="text-center">
-                        <p className="text-xs text-slate-600">Shots</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">Shots</p>
                         <p className="text-sm sm:text-base font-semibold">{projectShots.length}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-slate-600">Completed</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">Completed</p>
                         <p className="text-sm sm:text-base font-semibold text-green-600">{completedShots}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-slate-600">Shooters</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">Shooters</p>
                         <p className="text-sm sm:text-base font-semibold">{project.assignments?.length || 0}</p>
                       </div>
                     </div>
                     {project.date && (
-                      <div className="flex items-center gap-1 text-xs text-slate-500 pt-2">
+                      <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 pt-2">
                         <Calendar className="w-3 h-3" />
                         <span>{formatDate(project.date)}</span>
                       </div>

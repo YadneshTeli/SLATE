@@ -5,6 +5,7 @@ import { EnhancedAdminDashboard } from '@/components/EnhancedAdminDashboard';
 import { TeamProgressDashboard } from '@/components/TeamProgressDashboard';
 import { UserManagement } from '@/components/UserManagement';
 import { ProjectCreationDashboard } from '@/components/ProjectCreationDashboard';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { gsap } from 'gsap';
@@ -54,28 +55,29 @@ export function AdminDashboardPage() {
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-slate-200">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
-          <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-3 xs:gap-0 min-h-[64px] sm:h-16 py-2 xs:py-0">
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <h1 className="text-lg sm:text-xl font-bold text-slate-900">SLATE Admin</h1>
-              <span className="text-xs sm:text-sm text-slate-500 truncate max-w-[120px] sm:max-w-none">
+          <div className="flex min-h-[64px] flex-col justify-between gap-2 py-3 sm:h-16 sm:flex-row sm:items-center sm:gap-4 sm:py-0">
+            <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+              <h1 className="shrink-0 text-lg font-bold text-slate-900 dark:text-white sm:text-xl">SLATE Admin</h1>
+              <span className="min-w-0 truncate text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
                 Welcome, {state.user?.name}
               </span>
             </div>
-            <nav className="flex items-center space-x-2 sm:space-x-4 w-full xs:w-auto">
+            <nav className="grid w-full grid-cols-[1fr_auto_auto] items-center gap-2 sm:flex sm:w-auto sm:gap-3">
               <Link
                 to="/admin/projects"
-                className="text-slate-600 hover:text-slate-900 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors touch-manipulation min-h-[36px] flex items-center"
+                className="flex min-h-[40px] items-center justify-center rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:text-sm"
               >
                 <span className="hidden sm:inline">Project Management</span>
                 <span className="sm:hidden">Projects</span>
               </Link>
+              <ThemeToggle />
               <button
                 onClick={handleLogout}
-                className="bg-slate-600 hover:bg-slate-700 text-white px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors touch-manipulation min-h-[36px]"
+                className="min-h-[40px] rounded-md bg-slate-700 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950 dark:hover:bg-white sm:px-4 sm:text-sm"
               >
                 Logout
               </button>
@@ -87,41 +89,40 @@ export function AdminDashboardPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
         <div className="mb-4 sm:mb-6 lg:mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-1 sm:mb-2">Dashboard Overview</h2>
-          <p className="text-sm sm:text-base text-slate-600">Monitor project progress and team performance</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2">Dashboard Overview</h2>
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300">Monitor project progress and team performance</p>
         </div>
 
         {currentProject ? (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 gap-1 h-auto p-1">
+            <TabsList className="flex h-auto w-full justify-start gap-1 overflow-x-auto p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <TabsTrigger 
                 value="overview"
-                className="text-xs sm:text-sm py-2 sm:py-2.5 touch-manipulation min-h-[36px] data-[state=active]:bg-white"
+                className="min-h-[40px] min-w-[112px] flex-1 text-xs sm:min-w-0 sm:text-sm py-2 sm:py-2.5"
               >
                 Overview
               </TabsTrigger>
               <TabsTrigger 
                 value="team"
-                className="text-xs sm:text-sm py-2 sm:py-2.5 touch-manipulation min-h-[36px] data-[state=active]:bg-white"
+                className="min-h-[40px] min-w-[96px] flex-1 text-xs sm:min-w-0 sm:text-sm py-2 sm:py-2.5"
               >
                 Team
               </TabsTrigger>
               <TabsTrigger 
                 value="users"
-                className="text-xs sm:text-sm py-2 sm:py-2.5 touch-manipulation min-h-[36px] data-[state=active]:bg-white"
+                className="min-h-[40px] min-w-[96px] flex-1 text-xs sm:min-w-0 sm:text-sm py-2 sm:py-2.5"
               >
                 Users
               </TabsTrigger>
               <TabsTrigger 
                 value="projects"
-                className="text-xs sm:text-sm py-2 sm:py-2.5 touch-manipulation min-h-[36px] data-[state=active]:bg-white col-span-1 sm:col-span-1"
+                className="min-h-[40px] min-w-[104px] flex-1 text-xs sm:min-w-0 sm:text-sm py-2 sm:py-2.5"
               >
-                <span className="hidden xs:inline">Projects</span>
-                <span className="xs:hidden">Proj</span>
+                Projects
               </TabsTrigger>
               <TabsTrigger 
                 value="settings"
-                className="text-xs sm:text-sm py-2 sm:py-2.5 touch-manipulation min-h-[36px] data-[state=active]:bg-white col-span-2 sm:col-span-1"
+                className="min-h-[40px] min-w-[104px] flex-1 text-xs sm:min-w-0 sm:text-sm py-2 sm:py-2.5"
               >
                 Settings
               </TabsTrigger>
@@ -148,8 +149,8 @@ export function AdminDashboardPage() {
 
             <TabsContent value="settings" className="space-y-6">
               <div className="text-center py-8 sm:py-12">
-                <h3 className="text-base sm:text-lg font-medium text-slate-900 mb-2">Project Settings</h3>
-                <p className="text-sm sm:text-base text-slate-600 mb-4">Configure project details and preferences</p>
+                <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-2">Project Settings</h3>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 mb-4">Configure project details and preferences</p>
                 <Button asChild className="touch-manipulation min-h-[44px]">
                   <Link to="/admin/projects">Advanced Project Management</Link>
                 </Button>
@@ -159,8 +160,8 @@ export function AdminDashboardPage() {
         ) : (
           <div className="space-y-4 sm:space-y-6">
             <div className="text-center py-6 sm:py-8">
-              <h3 className="text-base sm:text-lg font-medium text-slate-900 mb-2">Welcome to SLATE Admin</h3>
-              <p className="text-sm sm:text-base text-slate-600 mb-4">Create your first project to get started</p>
+              <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-2">Welcome to SLATE Admin</h3>
+              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 mb-4">Create your first project to get started</p>
             </div>
             <ProjectCreationDashboard />
           </div>

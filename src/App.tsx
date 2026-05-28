@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AppProvider } from '@/contexts/AppContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AppRouter } from '@/components/AppRouter';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { UserOnboarding, type OnboardingData } from '@/components/UserOnboarding';
@@ -90,11 +91,13 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppProvider>
-        <AppContent />
-      </AppProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppProvider>
+          <AppContent />
+        </AppProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

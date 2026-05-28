@@ -20,10 +20,10 @@ export function ProtectedRoute({
   if (loading) {
     console.log('🟣 [ProtectedRoute] Showing loading spinner');
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-600" />
-          <p className="text-gray-600">Loading...</p>
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -39,10 +39,10 @@ export function ProtectedRoute({
   if (requireRole && user.role !== requireRole) {
     console.log('🟣 [ProtectedRoute] Role mismatch. Required:', requireRole, 'User has:', user.role);
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="text-center space-y-4 max-w-md">
-          <h2 className="text-xl font-semibold text-gray-900">Access Denied</h2>
-          <p className="text-gray-600">
+          <h2 className="text-xl font-semibold text-foreground">Access Denied</h2>
+          <p className="text-muted-foreground">
             You need {requireRole} privileges to access this page.
             {user.role === 'shooter' && requireRole === 'admin' && (
               <span className="block mt-2">
@@ -50,7 +50,7 @@ export function ProtectedRoute({
               </span>
             )}
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Current role: <span className="font-medium capitalize">{user.role}</span>
           </p>
         </div>
